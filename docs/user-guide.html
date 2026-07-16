@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>HIVE Events Tracker — User Guide</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1c1c1a; font-size: 11.5pt; line-height: 1.55; }
+  .cover { text-align: center; padding-top: 150px; page-break-after: always; }
+  .cover .bee { font-size: 72pt; }
+  .cover h1 { font-size: 30pt; margin-top: 18px; letter-spacing: .5px; }
+  .cover .sub { font-size: 14pt; color: #6b6a66; margin-top: 8px; }
+  .cover .url { display: inline-block; margin-top: 34px; background: #f5a300; color: #1c1500; font-weight: 700;
+    font-size: 14pt; padding: 12px 30px; border-radius: 10px; }
+  .cover .foot { margin-top: 120px; color: #9b988f; font-size: 10pt; }
+  h2 { font-size: 17pt; color: #1c1500; background: #fff4dd; border-left: 6px solid #f5a300;
+    padding: 8px 14px; margin: 26px 0 12px; border-radius: 0 8px 8px 0; page-break-after: avoid; }
+  h3 { font-size: 12.5pt; margin: 18px 0 6px; color: #c98600; page-break-after: avoid; }
+  p, li { margin-bottom: 5px; }
+  ol, ul { margin: 6px 0 10px 22px; }
+  .steps li { margin-bottom: 7px; }
+  .tip { background: #e8effd; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 10.5pt; }
+  .warn { background: #fdecea; border-left: 4px solid #c0392b; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 10.5pt; }
+  code, .kbd { background: #f0efec; border: 1px solid #dcdbd6; border-radius: 4px; padding: 1px 6px; font-family: Consolas, monospace; font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 10.5pt; }
+  th { background: #23221f; color: #fff; text-align: left; padding: 7px 10px; }
+  td { border: 1px solid #dcdbd6; padding: 6px 10px; vertical-align: top; }
+  tr:nth-child(even) td { background: #faf9f5; }
+  .badge { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 9.5pt; font-weight: 600; }
+  .b-active { background: #e8effd; color: #2563eb; } .b-won { background: #e2f5ea; color: #1a7f4b; } .b-lost { background: #fdecea; color: #c0392b; }
+  .pagebreak { page-break-before: always; }
+  .toc td { border: none; border-bottom: 1px dotted #dcdbd6; }
+  footer.docfoot { margin-top: 30px; color: #9b988f; font-size: 9pt; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<div class="cover">
+  <div class="bee">🐝</div>
+  <h1>HIVE Events Tracker</h1>
+  <div class="sub">User Guide — Students &amp; Faculty<br/>Srinivasan Ramanujan Institute of Technology</div>
+  <div class="url">https://srit-hive.web.app</div>
+  <div class="foot">Version 1.0 · July 2026</div>
+</div>
+
+<!-- ======================= INTRO ======================= -->
+<h2>1. What is HIVE?</h2>
+<p>HIVE is our college's portal for tracking every hackathon, workshop, contest and event you participate in. Instead of losing track of registrations across many websites, you log each participation once in HIVE and update its status as it progresses — and your whole team sees it too. Faculty get a live view of all student participation, with search, analytics and downloadable reports.</p>
+
+<table class="toc">
+  <tr><td><b>Part A — For Students</b></td><td style="text-align:right">Sections 2 – 7</td></tr>
+  <tr><td><b>Part B — For Faculty / Admin</b></td><td style="text-align:right">Sections 8 – 12</td></tr>
+  <tr><td><b>Troubleshooting &amp; FAQ</b></td><td style="text-align:right">Section 13</td></tr>
+</table>
+
+<!-- ======================= STUDENTS ======================= -->
+<h2>Part A — For Students</h2>
+
+<h2>2. Creating your account</h2>
+<ol class="steps">
+  <li>Open <b>https://srit-hive.web.app</b> in any browser (phone or laptop).</li>
+  <li>Click <b>Create your account</b>.</li>
+  <li>Choose <b>Student</b>.</li>
+  <li>Enter your <b>college email</b> — it must end with <code>@sritcbe.ac.in</code>. Personal emails will not be accepted here.</li>
+  <li>Set a password (minimum 6 characters), <i>or</i> tick <b>"Use the default password"</b> to use the standard one. You can change it anytime later from your Profile.</li>
+  <li>Click <b>Continue</b> and fill in your profile: full name, year, department, register number, and your top skills (type a skill and press <span class="kbd">Enter</span> to add each one). You can also add extra info like your GitHub or LinkedIn, one per line as <code>Label: value</code>.</li>
+  <li>Click <b>Create account</b> — you land straight on your dashboard. 🎉</li>
+</ol>
+<div class="tip"><b>Tip:</b> If a teammate already added you to an event using your college email <i>before</i> you registered, that event appears in your account automatically the moment you sign up.</div>
+
+<h2>3. Logging in (two ways)</h2>
+<p>Sign in at <b>https://srit-hive.web.app</b> with your <b>college email + password</b>.</p>
+<h3>Optional: link your personal email</h3>
+<ol class="steps">
+  <li>Go to <b>Profile → Login emails</b>.</li>
+  <li>Enter your personal email (e.g. Gmail) and click <b>Link</b>.</li>
+  <li>From now on you can sign in with <i>either</i> email — <b>the password is the same one</b>.</li>
+</ol>
+
+<h2>4. Adding an event you're participating in</h2>
+<ol class="steps">
+  <li>Click <b>＋ Add event</b> (dashboard or My Events).</li>
+  <li><b>Event name</b> — start typing. If the event was already posted by faculty or entered by another team, it appears in a dropdown — <b>select it from the list</b> so faculty can group all participants of the same event together. If it's not there, just type the full name.</li>
+  <li><b>Event type</b> — Hackathon, Workshop, Paper Presentation… choose <b>Other</b> to type your own.</li>
+  <li><b>Team size</b> — total members including you.</li>
+  <li><b>Team members</b> — add everyone except yourself (you're included automatically). Three cases:
+    <table>
+      <tr><th>Your teammate is…</th><th>What to do</th><th>What happens</th></tr>
+      <tr><td>Registered on HIVE</td><td>Choose <b>Registered on HIVE</b> and search their name</td><td>The event instantly appears in <i>their</i> My Events too</td></tr>
+      <tr><td>SRIT student, not on HIVE yet</td><td>Choose <b>SRIT student</b>, enter their name + <code>@sritcbe.ac.in</code> email</td><td>The event auto-attaches to their account when they register</td></tr>
+      <tr><td>From another college</td><td>Choose <b>Other college</b>, enter name + personal email</td><td>Stored for records only</td></tr>
+    </table>
+  </li>
+  <li><b>Dates to track</b> — add labelled dates like "Round 1", "Submission deadline", "Finals". These show up as reminders on your dashboard.</li>
+  <li><b>Current status</b> — free text describing where you are ("Round 2 cleared, waiting for shortlist").</li>
+  <li><b>Overall status</b> — <span class="badge b-active">active</span> while ongoing; change to <span class="badge b-won">won</span> or <span class="badge b-lost">lost</span> when it concludes.</li>
+  <li>Click <b>Add event</b>.</li>
+</ol>
+<div class="warn"><b>Keep it updated!</b> Open any event → use <b>Quick status update</b> whenever something changes. Faculty reports rely on your statuses being current.</div>
+
+<h2>5. Your dashboard</h2>
+<ul>
+  <li><b>Stat cards</b> — total events, active, won (with win rate), lost.</li>
+  <li><b>Charts</b> — split by event type, outcomes, and your participation over time.</li>
+  <li><b>⏰ Upcoming dates</b> — every tracked date across all your events, nearest first.</li>
+</ul>
+
+<h2>6. Opportunities — find &amp; share events</h2>
+<ul>
+  <li>The <b>Opportunities</b> page lists events posted by faculty (📢 broadcasts) and by fellow students (💡).</li>
+  <li>Found an interesting hackathon somewhere? Click <b>＋ Post an event</b> and share the name, registration link and notes — everyone can see it.</li>
+  <li>Want to participate in a posted event? Click <b>🎯 Track this event</b> — the add-event form opens pre-filled and linked to that posting. Fill in your team and save.</li>
+</ul>
+
+<h2>7. Managing your profile</h2>
+<ul>
+  <li><b>Profile</b> — update name, year, department, register number, skills any time.</li>
+  <li><b>Change password</b> — enter your current password and a new one (also works if you kept the default password and want your own).</li>
+</ul>
+
+<!-- ======================= FACULTY ======================= -->
+<div class="pagebreak"></div>
+<h2>Part B — For Faculty / Admin</h2>
+
+<h2>8. Creating a faculty account</h2>
+<ol class="steps">
+  <li>Get a <b>faculty invite code</b> from the admin team (each code works exactly once).</li>
+  <li>Open <b>https://srit-hive.web.app</b> → <b>Create your account</b> → choose <b>Faculty / Admin</b>.</li>
+  <li>Enter the invite code, your <code>@sritcbe.ac.in</code> email, a password, and your profile details.</li>
+  <li>After signing in you'll see the extra <b>Admin</b> section in the sidebar: Analytics, Students, All Events, Reports.</li>
+</ol>
+<div class="tip"><b>Need codes for colleagues?</b> Go to <b>Admin → Reports → Faculty invite codes</b>, type a new code and click <b>Create code</b>. Share it privately — one code, one account.</div>
+
+<h2>9. College analytics (Admin → Analytics)</h2>
+<ul>
+  <li>Live totals: students registered, participation entries, wins, losses.</li>
+  <li>Charts: participations by event type, outcome split, department-wise comparison, 12-month trend.</li>
+  <li><b>🏅 Most active students</b> — click any row to open that student's full profile.</li>
+</ul>
+
+<h2>10. Students &amp; master search (Admin → Students)</h2>
+<ul>
+  <li>Search by <b>name, register number or email</b>; filter by department and year.</li>
+  <li><b>View</b> opens the student's page: profile, skills, personal alias, and their complete participation history with statuses.</li>
+  <li><b>Edit</b> lets you correct a student's details directly in the interface; <b>Delete</b> removes their HIVE profile.</li>
+</ul>
+
+<h2>11. All events &amp; filtering participants (Admin → All Events)</h2>
+<ul>
+  <li>Every participation entry across the college, in one table.</li>
+  <li>Filter by <b>event name</b> (see all teams registered under one event), status, type, department, and a from/to date range.</li>
+  <li>The 🔗 icon means the entry is linked to a posted opportunity.</li>
+  <li>Open any entry to view details, update its status, or delete it.</li>
+</ul>
+
+<h2>12. Reports &amp; notifying students (Admin → Reports / Opportunities)</h2>
+<h3>Generating reports</h3>
+<ol class="steps">
+  <li>Pick a preset: <b>All participations · Events won · Currently active · Events lost</b>.</li>
+  <li>Optionally narrow by event type, department, and date period.</li>
+  <li>Preview updates instantly. Click <b>⬇ CSV</b> (for Excel) or <b>⬇ PDF</b> (formatted document).</li>
+</ol>
+<h3>Notifying students about an event</h3>
+<ol class="steps">
+  <li>Go to <b>Opportunities → ＋ Post an event</b>.</li>
+  <li>Enter the event name, type, registration link and notes; keep <b>📢 Broadcast to all students</b> ticked.</li>
+  <li>Students see it in their Opportunities feed and can register for tracking with one click — their entries stay linked to your post, so you can filter exactly who signed up under it.</li>
+</ol>
+
+<!-- ======================= FAQ ======================= -->
+<div class="pagebreak"></div>
+<h2>13. Troubleshooting &amp; FAQ</h2>
+<table>
+  <tr><th style="width:42%">Problem / question</th><th>Answer</th></tr>
+  <tr><td>"Only @sritcbe.ac.in email addresses can register"</td><td>Account creation needs your college email. Link your personal email later from Profile.</td></tr>
+  <tr><td>I forgot my password</td><td>Contact the admin team — they can reset it from the Firebase console. If you know it, change it yourself in Profile.</td></tr>
+  <tr><td>Can I log in with my personal email?</td><td>Yes — after linking it in <b>Profile → Login emails</b>. Same password for both.</td></tr>
+  <tr><td>I added a teammate but they can't see the event</td><td>If they're registered, add them via <b>Registered on HIVE</b> (name search). If added by email, they'll see it after they register with that exact college email.</td></tr>
+  <tr><td>My event doesn't appear in the name dropdown</td><td>The dropdown shows already-posted/tracked events. If yours is new, just type the full name — the next team will then find it in the dropdown.</td></tr>
+  <tr><td>Who can edit or delete an event entry?</td><td>Any team member can update it; the creator and faculty can delete it.</td></tr>
+  <tr><td>"Invalid or already-used faculty invite code"</td><td>Each code works once. Ask an existing faculty member to mint a new one (Admin → Reports).</td></tr>
+  <tr><td>The page looks stuck or outdated</td><td>Refresh the browser (Ctrl+R). HIVE is a web app — no installation or updates needed.</td></tr>
+</table>
+
+<footer class="docfoot">🐝 HIVE Events Tracker · https://srit-hive.web.app · Built for SRIT</footer>
+
+</body>
+</html>
