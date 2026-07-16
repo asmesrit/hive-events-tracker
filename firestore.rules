@@ -1,0 +1,99 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isFaculty() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'faculty';
+    }
+
+    function validInviteCode(code) {
+      return exists(/databases/$(database)/documents/inviteCodes/$(code)) &&
+        get(/databases/$(database)/documents/inviteCodes/$(code)).data.used == false;
+    }
+
+    // ---------- users ----------
+    // Any signed-in user can read profiles (needed for teammate search &
+    // faculty views). Users create their own doc at signup; the faculty
+    // role is only allowed with a valid unused invite code.
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.auth.uid == userId &&
+        (request.resource.data.role == 'student' ||
+         (request.resource.data.role == 'faculty' &&
+          validInviteCode(request.resource.data.inviteCode)));
+      allow update: if signedIn() &&
+        (isFaculty() ||
+         (request.auth.uid == userId &&
+          request.resource.data.role == resource.data.role));
+      allow delete: if isFaculty();
+    }
+
+    // ---------- emailIndex ----------
+    // Maps any login email (college or alias) -> the real auth email.
+    // Must be readable before sign-in for alias login translation.
+    match /emailIndex/{email} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---------- participations ----------
+    // Readable by all signed-in users (needed for the event-name
+    // autocomplete and faculty filtering). Edits restricted to the team,
+    // to a pending SRIT teammate claiming the entry, or to faculty.
+    match /participations/{partId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if signedIn() && (
+        request.auth.uid in resource.data.memberUids ||
+        resource.data.createdBy == request.auth.uid ||
+        (request.auth.token.email != null &&
+         request.auth.token.email in resource.data.pendingSritEmails) ||
+        isFaculty()
+      );
+      allow delete: if signedIn() &&
+        (resource.data.createdBy == request.auth.uid || isFaculty());
+    }
+
+    // ---------- opportunities ----------
+    match /opportunities/{oppId} {
+      allow read: if signedIn();
+      allow create: if signedIn() &&
+        request.resource.data.postedBy == request.auth.uid &&
+        (request.resource.data.isBroadcast == false || isFaculty());
+      allow update, delete: if signedIn() &&
+        (resource.data.postedBy == request.auth.uid || isFaculty());
+    }
+
+    // ---------- pendingClaims ----------
+    // Written when a team names an unregistered SRIT email; read/deleted by
+    // that person after signup (their auth email matches the doc id).
+    match /pendingClaims/{email} {
+      allow get, delete: if signedIn() &&
+        (request.auth.token.email == email || isFaculty());
+      allow list: if isFaculty();
+      allow create, update: if signedIn();
+    }
+
+    // ---------- inviteCodes ----------
+    // `get` by document id is open so registration can validate a typed
+    // code (unauthenticated); listing codes is faculty-only, so codes
+    // cannot be enumerated.
+    match /inviteCodes/{code} {
+      allow get: if true;
+      allow list: if isFaculty();
+      allow create: if isFaculty();
+      allow update: if signedIn() &&
+        request.resource.data.used == true &&
+        request.resource.data.usedBy == request.auth.uid;
+      allow delete: if isFaculty();
+    }
+  }
+}
