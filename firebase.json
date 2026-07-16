@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "srit-hive",
     "public": ".",
     "ignore": [
       "firebase.json",
