@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>HIVE Events Tracker — User Guide v2</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1c1c1a; font-size: 11.5pt; line-height: 1.55; }
+  .cover { text-align: center; padding-top: 140px; page-break-after: always; }
+  .cover .bee { font-size: 72pt; }
+  .cover h1 { font-size: 30pt; margin-top: 18px; letter-spacing: .5px; }
+  .cover .sub { font-size: 14pt; color: #6b6a66; margin-top: 8px; }
+  .cover .url { display: inline-block; margin-top: 30px; background: #f5a300; color: #1c1500; font-weight: 700;
+    font-size: 14pt; padding: 12px 30px; border-radius: 10px; }
+  .cover .vbadge { display: block; margin: 26px auto 0; width: fit-content; background: #23221f; color: #fff;
+    padding: 6px 22px; border-radius: 999px; font-size: 11pt; }
+  .cover .foot { margin-top: 90px; color: #9b988f; font-size: 10pt; }
+  .newbox { background: #fff4dd; border: 2px solid #f5a300; border-radius: 12px; padding: 14px 18px; margin: 14px 0; }
+  .newbox h3 { color: #c98600; margin: 0 0 6px; }
+  h2 { font-size: 17pt; color: #1c1500; background: #fff4dd; border-left: 6px solid #f5a300;
+    padding: 8px 14px; margin: 26px 0 12px; border-radius: 0 8px 8px 0; page-break-after: avoid; }
+  h3 { font-size: 12.5pt; margin: 18px 0 6px; color: #c98600; page-break-after: avoid; }
+  p, li { margin-bottom: 5px; }
+  ol, ul { margin: 6px 0 10px 22px; }
+  .steps li { margin-bottom: 7px; }
+  .tip { background: #e8effd; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 10.5pt; }
+  .warn { background: #fdecea; border-left: 4px solid #c0392b; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 10.5pt; }
+  code, .kbd { background: #f0efec; border: 1px solid #dcdbd6; border-radius: 4px; padding: 1px 6px; font-family: Consolas, monospace; font-size: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 10.5pt; }
+  th { background: #23221f; color: #fff; text-align: left; padding: 7px 10px; }
+  td { border: 1px solid #dcdbd6; padding: 6px 10px; vertical-align: top; }
+  tr:nth-child(even) td { background: #faf9f5; }
+  .badge { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 9.5pt; font-weight: 600; }
+  .b-active { background: #e8effd; color: #2563eb; } .b-won { background: #e2f5ea; color: #1a7f4b; } .b-lost { background: #fdecea; color: #c0392b; }
+  .b-new { background: #f5a300; color: #1c1500; }
+  .pagebreak { page-break-before: always; }
+  .toc td { border: none; border-bottom: 1px dotted #dcdbd6; }
+  footer.docfoot { margin-top: 30px; color: #9b988f; font-size: 9pt; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<div class="cover">
+  <div class="bee">🐝</div>
+  <h1>HIVE Events Tracker</h1>
+  <div class="sub">User Guide — Students &amp; Faculty<br/>Sri Ramakrishna Institute of Technology</div>
+  <div class="url">https://srit-hive.web.app</div>
+  <span class="vbadge">Version 2.0 · July 2026</span>
+  <div class="foot">New in v2: certificates &amp; photos on Drive · prize money · faculty mentors ·<br/>deadline reminders · My Mentoring · student reports &amp; profile download</div>
+</div>
+
+<!-- ======================= INTRO ======================= -->
+<h2>1. What is HIVE?</h2>
+<p>HIVE is our college's portal for tracking every hackathon, workshop, contest and event you participate in. Log each participation once, keep its status updated, attach your certificates and photos — and your whole team (and mentors) see it too. Faculty get live analytics, search, mentoring views and downloadable reports.</p>
+
+<div class="newbox">
+  <h3>✨ What's new in version 2</h3>
+  <ul>
+    <li><b>📜 Certificates</b> — upload participation/winner certificates; stored in the college Drive</li>
+    <li><b>📸 Event photos</b> — multiple photos with previews &amp; progress (optional; skip for virtual events)</li>
+    <li><b>💰 Prize money</b> — record the amount and currency you won</li>
+    <li><b>🧑‍🏫 Faculty mentors</b> — add one or more mentors to any participation</li>
+    <li><b>⏰ Deadline reminders</b> — a popup at login when a posted event's deadline is today/tomorrow</li>
+    <li><b>🗓️ Post expiry</b> — posted events show a "valid till" date and mark themselves Expired</li>
+    <li><b>📄 Student reports</b> — faculty download per-student PDFs; students download their own profile report</li>
+    <li><b>📱 Better mobile view</b> — the whole portal is now phone-friendly</li>
+  </ul>
+</div>
+
+<table class="toc">
+  <tr><td><b>Part A — For Students</b></td><td style="text-align:right">Sections 2 – 9</td></tr>
+  <tr><td><b>Part B — For Faculty / Admin</b></td><td style="text-align:right">Sections 10 – 15</td></tr>
+  <tr><td><b>Troubleshooting &amp; FAQ</b></td><td style="text-align:right">Section 16</td></tr>
+</table>
+
+<!-- ======================= STUDENTS ======================= -->
+<div class="pagebreak"></div>
+<h2>Part A — For Students</h2>
+
+<h2>2. Creating your account &amp; logging in</h2>
+<ol class="steps">
+  <li>Open <b>https://srit-hive.web.app</b> → <b>Create your account</b> → choose <b>Student</b>.</li>
+  <li>Use your college email ending with <code>@sritcbe.ac.in</code> (personal emails are rejected here).</li>
+  <li>Set a password (min 6 characters) or tick <b>"Use the default password"</b>. Change it anytime in Profile.</li>
+  <li>Fill your profile: name, year, department, register number, skills (press <span class="kbd">Enter</span> after each), and optional extras (<code>GitHub: handle</code>, one per line).</li>
+</ol>
+<h3>Two ways to sign in</h3>
+<p>Link your personal email in <b>Profile → Login emails</b> — then sign in with <i>either</i> email using the <b>same password</b>.</p>
+<div class="tip"><b>Joined late?</b> If a teammate added you to an event (or a mentor role) using your college email before you registered, it attaches to your account automatically the moment you sign up.</div>
+
+<h2>3. Adding an event</h2>
+<ol class="steps">
+  <li>Click <b>＋ Add event</b>.</li>
+  <li><b>Event name</b> — start typing; select from the dropdown if the event was already posted or tracked by another team (this groups all participants for faculty). Otherwise type the full name.</li>
+  <li><b>Event type</b> — pick one, or <b>Other</b> to type your own.</li>
+  <li><b>Team size</b> — total members including you.</li>
+  <li><b>Received prize money?</b> <span class="badge b-new">NEW</span> — choose <b>Yes</b> to reveal <b>Amount</b> and <b>Currency</b> (INR / USD / EUR / Other → specify).</li>
+  <li><b>Team members</b> — add everyone except yourself:
+    <table>
+      <tr><th>Teammate is…</th><th>What to do</th><th>What happens</th></tr>
+      <tr><td>Registered on HIVE (student or faculty)</td><td>Search their name, click to add</td><td>Event instantly appears in their My Events</td></tr>
+      <tr><td>SRIT student/faculty, not on HIVE yet</td><td>Enter name + <code>@sritcbe.ac.in</code> email</td><td>Auto-attaches when they register</td></tr>
+      <tr><td>From another college</td><td>Enter name + personal email</td><td>Stored for records</td></tr>
+    </table>
+  </li>
+  <li><b>Faculty mentors</b> <span class="badge b-new">NEW</span> — optional, add one or more: search registered faculty by name/email and click <b>＋ Add mentor</b>, or use <b>"Not registered yet"</b> with their official SRIT mail. Mentors see your team in their <b>My Mentoring</b> page.</li>
+  <li><b>Dates to track</b> — labelled dates ("Round 1", "Submission deadline") that appear as dashboard reminders.</li>
+  <li><b>Status</b> — free-text progress + overall <span class="badge b-active">active</span> / <span class="badge b-won">won</span> / <span class="badge b-lost">lost</span>.</li>
+  <li>Click <b>Add event</b> — you'll get a success message and land on <b>My Events</b> with the new entry at the top.</li>
+</ol>
+
+<h2>4. Certificates 📜 <span class="badge b-new">NEW</span></h2>
+<ol class="steps">
+  <li>Open your event → <b>📜 Certificates</b> card → <b>⬆ Upload certificate</b>.</li>
+  <li>A Google Drive uploader opens in a new tab (sign in with your <b>SRIT Google account</b>).</li>
+  <li>Choose the type (<b>Participation / Winner / Other</b>), a label, and the file (JPG/PNG/WEBP/PDF, max 10 MB). You can upload as many as you need, one after another.</li>
+  <li>Return to HIVE → the certificate appears automatically (or press <b>🔄 Check for new uploads</b>).</li>
+</ol>
+<p>Certificates are stored in the college Drive; you and faculty can open them anytime with the <b>View ↗</b> link.</p>
+
+<h2>5. Event photos 📸 <span class="badge b-new">NEW</span></h2>
+<p>Add photos of you participating — on stage, presenting, receiving the award. <b>Optional</b>: skip it for virtual/online events.</p>
+<ol class="steps">
+  <li>Open your event → <b>📸 Event photos</b> card → <b>📸 Upload photos</b>.</li>
+  <li>In the uploader tab, pick the <b>Event photos</b> tab → select <b>multiple images at once</b> → previews appear before you upload.</li>
+  <li>Click <b>⬆ Upload</b> — a progress bar shows each file going up ("Uploading 2 of 3…").</li>
+  <li>Back in HIVE, the photos show as a thumbnail gallery on the event page — click any to view full size.</li>
+</ol>
+
+<h2>6. Your dashboard</h2>
+<ul>
+  <li>Stat cards: total events, active, won (with win rate), lost.</li>
+  <li>Charts: by event type, outcomes, participation over time.</li>
+  <li><b>⏰ Upcoming dates</b> — all tracked dates across your events, nearest first.</li>
+</ul>
+
+<h2>7. Opportunities &amp; deadline reminders ⏰</h2>
+<ul>
+  <li>The <b>Opportunities</b> feed lists events posted by faculty (📢) and students (💡).</li>
+  <li>Posting an event? Add a <b>"Valid till"</b> date <span class="badge b-new">NEW</span> (registration deadline or event date). After that date the post shows an <b>⏳ Expired</b> badge — it stays for reference, and the filter lets you view Live / Expired / Everything.</li>
+  <li><b>Deadline popup</b> <span class="badge b-new">NEW</span> — if a posted event's deadline is <b>today or tomorrow</b> when you log in, HIVE pops up a reminder with a <b>🎯 Track</b> button (shown once per day).</li>
+  <li><b>🎯 Track this event</b> — one click opens the add-event form pre-linked to the posting.</li>
+</ul>
+
+<h2>8. My Events &amp; keeping things updated</h2>
+<ul>
+  <li>Search + filter your events by name, status, and type. The 📜 icon marks entries with certificates.</li>
+  <li>Open any event → <b>Quick status update</b> to change the progress or mark it won/lost — keep it current, faculty reports depend on it!</li>
+</ul>
+
+<h2>9. Profile &amp; your personal report 📄 <span class="badge b-new">NEW</span></h2>
+<ul>
+  <li><b>Profile</b> — update details, skills, link your personal email, change your password.</li>
+  <li><b>⬇ Download my profile report</b> — one click generates a detailed PDF of you: profile info, participation stats, every event with mentors &amp; prize money, and all certificate links. Perfect for sharing with your department or attaching to applications.</li>
+</ul>
+
+<!-- ======================= FACULTY ======================= -->
+<div class="pagebreak"></div>
+<h2>Part B — For Faculty / Admin</h2>
+
+<h2>10. Faculty account &amp; invite codes</h2>
+<ol class="steps">
+  <li>Get a one-time <b>invite code</b> from the admin team.</li>
+  <li>Register at <b>https://srit-hive.web.app</b> → <b>Faculty / Admin</b> → enter the code + your SRIT email.</li>
+  <li>The <b>Admin</b> section appears in your sidebar: Analytics, Students, All Events, My Mentoring, Reports.</li>
+  <li>Mint codes for colleagues at <b>Admin → Reports → Faculty invite codes</b>.</li>
+</ol>
+
+<h2>11. My Mentoring 🧑‍🏫 <span class="badge b-new">NEW</span></h2>
+<ul>
+  <li>Every team that names you as a faculty mentor appears here — with stat tiles (teams / active / won / lost), search and status filters.</li>
+  <li>Click any row to open the full event: team, statuses, certificates, photos.</li>
+  <li><b>⬇ CSV / ⬇ PDF</b> — export a report of just <i>your</i> mentored teams (includes prize money and certificate links).</li>
+  <li>If a student added you as mentor before you registered, those teams attach to you automatically at signup.</li>
+</ul>
+
+<h2>12. Students, search &amp; student reports 📄 <span class="badge b-new">NEW</span></h2>
+<ul>
+  <li><b>Admin → Students</b> — search by name/register number/email; filter by department and year; edit or delete profiles in place.</li>
+  <li>Open a student → full profile, participation history, and a consolidated <b>📜 Certificates</b> list with links.</li>
+  <li><b>⬇ Student report (PDF)</b> — a formatted per-student document: profile header, stat chips, participation table (with mentors &amp; prize money), and certificate links. <b>⬇ CSV</b> for spreadsheets. Ready to forward to the department.</li>
+</ul>
+
+<h2>13. All Events &amp; analytics</h2>
+<ul>
+  <li><b>All Events</b> — every participation across the college; filter by event, status, type, department and date range. Icons: 🔗 linked to a posting · 📜 has certificates.</li>
+  <li><b>Analytics</b> — college-wide totals, event-type split, outcomes, department comparison, 12-month trend, most-active students.</li>
+</ul>
+
+<h2>14. Reports (report builder)</h2>
+<ol class="steps">
+  <li><b>Admin → Reports</b> → choose a preset: All / Won / Active / Lost.</li>
+  <li>Narrow by type, department, and period — the preview updates live.</li>
+  <li><b>⬇ CSV</b> or <b>⬇ PDF</b>. Reports now include <span class="badge b-new">NEW</span>: <b>Faculty mentor(s)</b>, <b>Prize money</b>, <b>Photos count</b>, <b>Certificates count</b> and <b>Certificate links</b> — anyone with the report can open the certificates via the links.</li>
+</ol>
+
+<h2>15. Posting &amp; notifying with deadlines</h2>
+<ol class="steps">
+  <li><b>Opportunities → ＋ Post an event</b> — name, type, registration link, notes, and the <b>Valid till</b> date; keep <b>📢 Broadcast</b> ticked.</li>
+  <li>Students get the feed entry, and on the deadline day HIVE also <b>pops up a reminder at login</b> for everyone.</li>
+  <li>After the date passes the post marks itself <b>⏳ Expired</b> (kept for records, filterable) — no manual cleanup needed.</li>
+  <li>Entries created via <b>🎯 Track</b> stay linked to your post, so you can filter exactly who registered under it.</li>
+</ol>
+
+<!-- ======================= FAQ ======================= -->
+<div class="pagebreak"></div>
+<h2>16. Troubleshooting &amp; FAQ</h2>
+<table>
+  <tr><th style="width:42%">Problem / question</th><th>Answer</th></tr>
+  <tr><td>The certificate/photo uploader shows a Google sign-in</td><td>Sign in with your <b>SRIT Google account</b> — the uploader is restricted to the college domain.</td></tr>
+  <tr><td>I uploaded a file but it's not on the event page</td><td>Return to the event and press <b>🔄 Check for new uploads</b>, or just reopen the event page.</td></tr>
+  <tr><td>Upload fails with an error in the Google tab</td><td>Make sure only your SRIT Google account is signed in that browser (multiple Google logins can break it) — or use an incognito window.</td></tr>
+  <tr><td>Mentor search shows "No registered faculty matches"</td><td>That person hasn't registered on HIVE with a faculty code. Add them via <b>"Not registered yet"</b> with their official SRIT mail — the mentorship attaches when they join.</td></tr>
+  <tr><td>I can't see the deadline popup again</td><td>It shows once per day per browser. The events are still in <b>Opportunities</b>.</td></tr>
+  <tr><td>Only @sritcbe.ac.in mails can register</td><td>By design. Link your personal email later in Profile for logging in.</td></tr>
+  <tr><td>Forgot password</td><td>Ask the admin team to reset it, or change it in Profile if you're logged in.</td></tr>
+  <tr><td>Who can edit/delete an event entry?</td><td>Any team member can update; the creator and faculty can delete.</td></tr>
+  <tr><td>Deleted a certificate but it's still in Drive</td><td>Removing it in HIVE removes it from the event; the file stays in the college Drive folder for records.</td></tr>
+  <tr><td>The app looks outdated after an update</td><td>Just reload once — the portal now picks up new versions automatically.</td></tr>
+</table>
+
+<footer class="docfoot">🐝 HIVE Events Tracker v2.0 · https://srit-hive.web.app · Sri Ramakrishna Institute of Technology</footer>
+
+</body>
+</html>
