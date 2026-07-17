@@ -18,11 +18,18 @@ export const CERT_KINDS = ["participation", "winner", "other"];
 
 export function certUploadsEnabled() { return !!CERT_UPLOAD_URL; }
 
-/** Open the Apps Script upload page for this participation in a new tab. */
-export function openCertUploader(partId, eventName) {
+/** Open the Apps Script upload page for this participation in a new tab.
+ *  mode: "cert" (default) or "photo" — which tab the page opens on. */
+export function openCertUploader(partId, eventName, mode = "cert") {
   const url = `${CERT_UPLOAD_URL}?token=${encodeURIComponent(CERT_UPLOAD_TOKEN)}` +
-    `&partId=${encodeURIComponent(partId)}&event=${encodeURIComponent(eventName || "")}`;
+    `&partId=${encodeURIComponent(partId)}&event=${encodeURIComponent(eventName || "")}` +
+    `&mode=${encodeURIComponent(mode)}`;
   window.open(url, "_blank", "noopener");
+}
+
+/** Drive image thumbnail (works for shared files). */
+export function driveThumb(fileId, width = 400) {
+  return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w${width}`;
 }
 
 /** Pull staged uploads for this participation onto its `certificates` array.
@@ -34,9 +41,10 @@ export async function reconcileCertUploads(partId) {
   let n = 0;
   for (const d of qs.docs) {
     const s = d.data();
-    const cert = {
-      label: s.label || s.fileName || "Certificate",
-      kind: CERT_KINDS.includes(s.kind) ? s.kind : "other",
+    const isPhoto = s.kind === "photo";
+    const entry = {
+      label: s.label || s.fileName || (isPhoto ? "Photo" : "Certificate"),
+      kind: isPhoto ? "photo" : (CERT_KINDS.includes(s.kind) ? s.kind : "other"),
       url: s.url,
       fileId: s.fileId || "",
       fileName: s.fileName || "",
@@ -45,10 +53,11 @@ export async function reconcileCertUploads(partId) {
       uploadedAt: s.createdAt || Timestamp.now(),
     };
     try {
-      await updateDoc(doc(db, "participations", partId), { certificates: arrayUnion(cert) });
+      await updateDoc(doc(db, "participations", partId),
+        isPhoto ? { photos: arrayUnion(entry) } : { certificates: arrayUnion(entry) });
       await deleteDoc(doc(db, "certUploads", d.id));
       n++;
-    } catch (e) { console.warn("cert reconcile failed", e); }
+    } catch (e) { console.warn("upload reconcile failed", e); }
   }
   return n;
 }
@@ -57,4 +66,9 @@ export async function reconcileCertUploads(partId) {
  *  stays in the college Drive (faculty can tidy the folder there). */
 export async function deleteCertificate(partId, cert) {
   await updateDoc(doc(db, "participations", partId), { certificates: arrayRemove(cert) });
+}
+
+/** Remove a photo entry from the participation (Drive file stays). */
+export async function deletePhoto(partId, photo) {
+  await updateDoc(doc(db, "participations", partId), { photos: arrayRemove(photo) });
 }

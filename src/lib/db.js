@@ -44,6 +44,8 @@ export async function createParticipation(data) {
     overallStatus: data.overallStatus || "active",
     datesToTrack: data.datesToTrack || [],
     mentor: data.mentor || null, // { type:'registered'|'srit-pending', uid?, name, email? }
+    prizeMoney: data.prizeMoney || null, // { amount, currency }
+    photos: [], // filled via the Drive uploader (see lib/certificates.js)
     notes: data.notes || "",
     createdBy: uid,
     createdByName: session.profile?.name || "",

@@ -86,6 +86,8 @@ export async function renderAdminReports(el) {
         teamSize: p.teamSize || 1,
         status: p.overallStatus || "",
         mentor: p.mentor?.name || "",
+        prize: p.prizeMoney?.amount ? `${p.prizeMoney.amount} ${p.prizeMoney.currency || "INR"}` : "",
+        photos: (p.photos || []).length,
         certs: (p.certificates || []).length,
         certLinks: (p.certificates || []).map((c) => `${c.label} (${c.kind}): ${c.url}`).join("  |  "),
         progress: p.currentStatus || "",
@@ -127,8 +129,8 @@ export async function renderAdminReports(el) {
     <p class="muted small" style="margin-top:8px">${rows.length} entr${rows.length === 1 ? "y" : "ies"} in this report</p>`;
   }
 
-  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Faculty mentor", "Status", "Certificates", "Certificate links", "Progress", "Added on"];
-  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.mentor, r.status, r.certs, r.certLinks, r.progress, r.added];
+  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Faculty mentor", "Status", "Prize money", "Photos", "Certificates", "Certificate links", "Progress", "Added on"];
+  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.mentor, r.status, r.prize, r.photos, r.certs, r.certLinks, r.progress, r.added];
 
   el.querySelector("#r-csv").onclick = () => {
     const rows = currentRows();
@@ -161,7 +163,7 @@ export async function renderAdminReports(el) {
       styles: { fontSize: 7, cellPadding: 1.5, overflow: "linebreak" },
       headStyles: { fillColor: [245, 163, 0], textColor: [28, 21, 0] },
       alternateRowStyles: { fillColor: [250, 249, 245] },
-      columnStyles: { 11: { cellWidth: 55 } }, // certificate links wrap
+      columnStyles: { 13: { cellWidth: 50 } }, // certificate links wrap
     });
     docPdf.save(`HIVE-report-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast("PDF downloaded", "success");

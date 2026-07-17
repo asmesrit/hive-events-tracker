@@ -1,7 +1,7 @@
 // Event detail — full view of one participation, quick status update, edit/delete.
 import { session, isFaculty } from "../lib/auth.js";
 import { getParticipation, updateParticipation, deleteParticipation, getOpportunity } from "../lib/db.js";
-import { certUploadsEnabled, openCertUploader, reconcileCertUploads, deleteCertificate } from "../lib/certificates.js";
+import { certUploadsEnabled, openCertUploader, reconcileCertUploads, deleteCertificate, deletePhoto, driveThumb } from "../lib/certificates.js";
 import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, fmtDateTime, toast, confirmDialog } from "../lib/ui.js";
 
 export async function renderEventDetail(el, params) {
@@ -50,6 +50,7 @@ export async function renderEventDetail(el, params) {
           <dt>Overall status</dt><dd>${statusBadge(ev.overallStatus)}</dd>
           <dt>Current progress</dt><dd>${escapeHtml(ev.currentStatus || "—")}</dd>
           <dt>Faculty mentor</dt><dd>${ev.mentor ? `${escapeHtml(ev.mentor.name)}${ev.mentor.type === "srit-pending" ? ' <span class="badge badge-active">pending signup</span>' : ""}<div class="muted small">${escapeHtml(ev.mentor.email || "")}</div>` : '<span class="muted">—</span>'}</dd>
+          ${ev.prizeMoney?.amount ? `<dt>💰 Prize money</dt><dd><strong>${escapeHtml(String(ev.prizeMoney.amount))} ${escapeHtml(ev.prizeMoney.currency || "INR")}</strong></dd>` : ""}
           <dt>Added by</dt><dd>${escapeHtml(ev.createdByName || "—")}</dd>
           <dt>Added on</dt><dd>${fmtDateTime(ev.createdAt)}</dd>
           <dt>Last updated</dt><dd>${fmtDateTime(ev.updatedAt)}</dd>
@@ -97,6 +98,24 @@ export async function renderEventDetail(el, params) {
       </div>
 
       <div class="card">
+        <h3>📸 Event photos <span class="muted small">(optional — skip for virtual events)</span></h3>
+        ${(ev.photos || []).length ? `
+        <div class="photo-grid">
+          ${ev.photos.map((p, i) => `
+            <div class="photo-item">
+              <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener" title="${escapeHtml(p.label)}">
+                <img src="${driveThumb(p.fileId)}" alt="${escapeHtml(p.label)}" loading="lazy"
+                     onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'photo-fallback',textContent:'🖼️ ' + this.alt}))" />
+              </a>
+              ${(p.uploadedBy === session.user.uid || isFaculty()) ? `<button class="photo-x" data-photo-del="${i}" title="Remove">✕</button>` : ""}
+            </div>`).join("")}
+        </div>` : '<p class="muted small">No photos yet — add one of you on stage, presenting, or receiving the award!</p>'}
+        ${canEdit ? (certUploadsEnabled() ? `
+          <button class="btn btn-ghost btn-sm" type="button" id="photo-open" style="margin-top:10px">📸 Upload photos</button>
+        ` : "") : ""}
+      </div>
+
+      <div class="card">
         <h3>📜 Certificates</h3>
         <div id="cert-list">
           ${(ev.certificates || []).length
@@ -137,10 +156,28 @@ export async function renderEventDetail(el, params) {
     </div>
   </div>`;
 
-  /* ---- certificates ---- */
+  /* ---- certificates & photos ---- */
   el.querySelector("#cert-open")?.addEventListener("click", () => {
-    openCertUploader(ev.id, ev.eventName);
+    openCertUploader(ev.id, ev.eventName, "cert");
     toast("Uploader opened in a new tab. Come back here after uploading.", "info", 5000);
+  });
+
+  el.querySelector("#photo-open")?.addEventListener("click", () => {
+    openCertUploader(ev.id, ev.eventName, "photo");
+    toast("Photo uploader opened in a new tab. Come back here after uploading.", "info", 5000);
+  });
+
+  el.querySelectorAll("[data-photo-del]").forEach((b) => {
+    b.onclick = async () => {
+      const photo = ev.photos[Number(b.dataset.photoDel)];
+      const ok = await confirmDialog(`Remove this photo (${photo.label})?`, { danger: true, okText: "Remove" });
+      if (!ok) return;
+      try {
+        await deletePhoto(ev.id, photo);
+        toast("Photo removed", "success");
+        renderEventDetail(el, params);
+      } catch (err) { toast(err.message, "error"); }
+    };
   });
 
   el.querySelector("#cert-refresh")?.addEventListener("click", async () => {

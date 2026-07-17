@@ -84,6 +84,27 @@ export async function renderEventForm(el, params = []) {
           <label>Current status / progress notes</label>
           <textarea name="currentStatus" placeholder="e.g. Round 2 cleared, waiting for finals shortlist">${escapeHtml(ev.currentStatus || "")}</textarea>
         </div>
+        <div class="field full">
+          <label>Received prize money?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hasPrize" value="no" ${!ev.prizeMoney?.amount ? "checked" : ""}/> No</label>
+            <label><input type="radio" name="hasPrize" value="yes" ${ev.prizeMoney?.amount ? "checked" : ""}/> Yes</label>
+          </div>
+        </div>
+        <div class="field" id="prize-amount-field" style="display:none">
+          <label>Prize money amount</label>
+          <input type="number" name="prizeAmount" min="0" step="any" value="${ev.prizeMoney?.amount || ""}" placeholder="e.g. 25000" />
+        </div>
+        <div class="field" id="prize-currency-field" style="display:none">
+          <label>Currency</label>
+          <select name="prizeCurrency">
+            ${["INR", "USD", "EUR", "Other"].map((c) => `<option ${(ev.prizeMoney?.currency && !["INR","USD","EUR"].includes(ev.prizeMoney.currency) ? c === "Other" : ev.prizeMoney?.currency === c) ? "selected" : ""}>${c}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field" id="prize-other-field" style="display:none">
+          <label>Specify currency</label>
+          <input type="text" name="prizeCurrencyOther" placeholder="e.g. GBP" value="${escapeHtml(ev.prizeMoney?.currency && !["INR","USD","EUR"].includes(ev.prizeMoney.currency) ? ev.prizeMoney.currency : "")}" />
+        </div>
       </div>
     </div>
 
@@ -136,6 +157,19 @@ export async function renderEventForm(el, params = []) {
   function syncOther() { otherField.style.display = typeSel.value === "Other" ? "flex" : "none"; }
   if (ev.eventType && !EVENT_TYPES.includes(ev.eventType)) typeSel.value = "Other";
   typeSel.onchange = syncOther; syncOther();
+
+  /* ---------- prize money show/hide ---------- */
+  const prizeCurrencySel = form.querySelector('select[name="prizeCurrency"]');
+  function syncPrize() {
+    const yes = form.querySelector('input[name="hasPrize"]:checked')?.value === "yes";
+    el.querySelector("#prize-amount-field").style.display = yes ? "flex" : "none";
+    el.querySelector("#prize-currency-field").style.display = yes ? "flex" : "none";
+    el.querySelector("#prize-other-field").style.display =
+      yes && prizeCurrencySel.value === "Other" ? "flex" : "none";
+  }
+  form.querySelectorAll('input[name="hasPrize"]').forEach((r) => { r.onchange = syncPrize; });
+  prizeCurrencySel.onchange = syncPrize;
+  syncPrize();
 
   /* ---------- event name autocomplete ---------- */
   const nameInput = el.querySelector("#event-name");
@@ -402,16 +436,23 @@ export async function renderEventForm(el, params = []) {
       overallStatus: data.overallStatus,
       datesToTrack: state.datesToTrack,
       mentor: state.mentor,
+      prizeMoney: data.hasPrize === "yes" && Number(data.prizeAmount) > 0
+        ? {
+            amount: Number(data.prizeAmount),
+            currency: data.prizeCurrency === "Other"
+              ? (data.prizeCurrencyOther?.trim() || "Other") : data.prizeCurrency,
+          }
+        : null,
     };
     try {
       if (editId) {
         await updateParticipation(editId, payload);
-        toast("Event updated", "success");
+        toast("Event updated ✅", "success");
         location.hash = `#/events/${editId}`;
       } else {
-        const id = await createParticipation(payload);
-        toast("Event added to your tracker 🎉", "success");
-        location.hash = `#/events/${id}`;
+        await createParticipation(payload);
+        toast("Event added to your tracker 🎉 You can find it in My Events.", "success", 5000);
+        location.hash = "#/events";
       }
     } catch (err) {
       toast(err.message, "error");
