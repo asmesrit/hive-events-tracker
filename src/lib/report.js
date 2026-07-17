@@ -7,7 +7,8 @@ import { getMentors } from "./db.js";
 import { APP_NAME } from "./firebase-config.js";
 
 const STATUS_ORDER = ["won", "active", "lost"];
-const STATUS_LABEL = { won: "🏆 WON", active: "🔵 ACTIVE", lost: "🔴 LOST" };
+// plain ASCII only — jsPDF's built-in fonts cannot render emoji
+const STATUS_LABEL = { won: "WON", active: "ACTIVE", lost: "LOST" };
 const STATUS_COLOR = { won: [26, 127, 75], active: [37, 99, 235], lost: [192, 57, 43] };
 
 function teamNames(p) {
