@@ -1,6 +1,7 @@
 // HIVE Events Tracker — bootstrap + hash router + app shell
 import { initAuth, session, logout, isFaculty } from "./lib/auth.js";
 import { escapeHtml, initials, toast } from "./lib/ui.js";
+import { maybeShowDeadlineReminder } from "./lib/reminders.js";
 import { APP_NAME } from "./lib/firebase-config.js";
 
 import { renderLogin } from "./pages/login.js";
@@ -73,6 +74,9 @@ async function renderRoute() {
   renderShell(route);
   const outlet = document.getElementById("outlet");
   await route.render(outlet, route.params);
+
+  // once per day: remind about posted events whose deadline is today/tomorrow
+  maybeShowDeadlineReminder();
 }
 
 /* ---------- shell (sidebar + outlet) ---------- */

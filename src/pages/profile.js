@@ -1,6 +1,7 @@
 // Profile — edit details, add personal alias email, change password.
 import { session, setAliasEmail, changePassword } from "../lib/auth.js";
-import { updateUser, DEPARTMENTS, YEARS } from "../lib/db.js";
+import { updateUser, myParticipations, DEPARTMENTS, YEARS } from "../lib/db.js";
+import { downloadStudentPdf } from "../lib/report.js";
 import { toast, escapeHtml } from "../lib/ui.js";
 
 export async function renderProfile(el) {
@@ -11,6 +12,7 @@ export async function renderProfile(el) {
   el.innerHTML = `
   <div class="page-head">
     <div><h1>My Profile</h1><div class="sub">Keep your details up to date</div></div>
+    <button class="btn btn-primary" id="my-report">⬇ Download my profile report</button>
   </div>
 
   <div class="grid grid-2">
@@ -76,6 +78,17 @@ export async function renderProfile(el) {
       e.target.value = "";
     }
   });
+
+  el.querySelector("#my-report").onclick = async () => {
+    const btn = el.querySelector("#my-report");
+    btn.disabled = true; btn.textContent = "Preparing…";
+    try {
+      const parts = await myParticipations();
+      downloadStudentPdf(session.profile, parts);
+      toast("Your profile report is downloaded — share it with your department if needed.", "success");
+    } catch (e2) { toast(e2.message, "error"); }
+    btn.disabled = false; btn.textContent = "⬇ Download my profile report";
+  };
 
   el.querySelector("#prof-form").onsubmit = async (e) => {
     e.preventDefault();

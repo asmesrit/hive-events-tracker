@@ -1,6 +1,7 @@
 // Admin — full profile of one student + every event they've participated in.
 import { getUser, participationsByUser } from "../lib/db.js";
-import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, emptyState, initials } from "../lib/ui.js";
+import { downloadStudentPdf, downloadStudentCsv } from "../lib/report.js";
+import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, emptyState, initials, toast } from "../lib/ui.js";
 
 export async function renderAdminStudentDetail(el, params) {
   const uid = params[0];
@@ -22,7 +23,11 @@ export async function renderAdminStudentDetail(el, params) {
         <div class="sub">${escapeHtml([student.registerNumber, student.department, student.year && "Year " + student.year].filter(Boolean).join(" · "))}</div>
       </div>
     </div>
-    <a class="btn btn-ghost" href="#/admin/students">← All students</a>
+    <div style="display:flex; gap:8px; flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" id="sr-pdf">⬇ Student report (PDF)</button>
+      <button class="btn btn-ghost btn-sm" id="sr-csv">⬇ CSV</button>
+      <a class="btn btn-ghost btn-sm" href="#/admin/students">← All students</a>
+    </div>
   </div>
 
   <div class="grid grid-4">
@@ -80,4 +85,13 @@ export async function renderAdminStudentDetail(el, params) {
   el.querySelectorAll("tr.clickable").forEach((tr) => {
     tr.onclick = () => { location.hash = `#/events/${tr.dataset.id}`; };
   });
+
+  el.querySelector("#sr-pdf").onclick = () => {
+    try { downloadStudentPdf(student, parts); toast("Report downloaded", "success"); }
+    catch (e) { toast(e.message, "error"); }
+  };
+  el.querySelector("#sr-csv").onclick = () => {
+    try { downloadStudentCsv(student, parts); toast("CSV downloaded", "success"); }
+    catch (e) { toast(e.message, "error"); }
+  };
 }

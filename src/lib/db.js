@@ -238,6 +238,20 @@ export async function searchUsersByName(prefix, max = 8) {
   return snapsToArr(qs);
 }
 
+/** Search registered faculty by name prefix (faculty-only query so results
+ *  aren't crowded out by students — uses the role+nameLower index). */
+export async function searchFacultyByName(prefix, max = 8) {
+  const p = prefix.toLowerCase();
+  const qs = await getDocs(query(
+    collection(db, "users"),
+    where("role", "==", "faculty"),
+    orderBy("nameLower"),
+    startAt(p), endAt(p + ""),
+    limit(max),
+  ));
+  return snapsToArr(qs);
+}
+
 export async function findUserByEmail(email) {
   const idx = await getDoc(doc(db, "emailIndex", normEmail(email)));
   if (!idx.exists()) return null;

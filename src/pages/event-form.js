@@ -6,7 +6,7 @@
 import { session, isSritEmail, normEmail } from "../lib/auth.js";
 import {
   EVENT_TYPES, createParticipation, updateParticipation, getParticipation,
-  searchUsersByName, searchOpportunities, searchParticipationNames, getOpportunity,
+  searchUsersByName, searchFacultyByName, searchOpportunities, searchParticipationNames, getOpportunity,
 } from "../lib/db.js";
 import { toast, escapeHtml, debounce, spinner } from "../lib/ui.js";
 import { ALLOWED_DOMAIN } from "../lib/firebase-config.js";
@@ -342,8 +342,8 @@ export async function renderEventForm(el, params = []) {
       const search = debounce(async () => {
         const v = inp.value.trim();
         if (v.length < 2) { box.style.display = "none"; return; }
-        const fac = (await searchUsersByName(v)).filter((u) =>
-          u.role === "faculty" && !state.mentors.some((m) => m.uid === u.id));
+        const fac = (await searchFacultyByName(v)).filter((u) =>
+          !state.mentors.some((m) => m.uid === u.id));
         if (!fac.length) { box.style.display = "none"; return; }
         box.innerHTML = fac.map((u, i) =>
           `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}</div><div class="sub">${escapeHtml([u.department, "Faculty"].filter(Boolean).join(" · "))}</div></div>`).join("");
