@@ -1,7 +1,7 @@
 // Event detail — full view of one participation, quick status update, edit/delete.
 import { session, isFaculty } from "../lib/auth.js";
 import { getParticipation, updateParticipation, deleteParticipation, getOpportunity } from "../lib/db.js";
-import { certUploadsEnabled, uploadCertificate, deleteCertificate, CERT_KINDS } from "../lib/certificates.js";
+import { certUploadsEnabled, openCertUploader, reconcileCertUploads, deleteCertificate } from "../lib/certificates.js";
 import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, fmtDateTime, toast, confirmDialog } from "../lib/ui.js";
 
 export async function renderEventDetail(el, params) {
@@ -13,6 +13,18 @@ export async function renderEventDetail(el, params) {
   catch { el.innerHTML = "<p>Event not found (it may have been deleted).</p>"; return; }
 
   const canEdit = ev.memberUids?.includes(session.user.uid) || isFaculty();
+
+  // pick up certificates uploaded via the Google Drive page since last visit
+  if (canEdit && certUploadsEnabled()) {
+    try {
+      const attached = await reconcileCertUploads(ev.id);
+      if (attached) {
+        toast(`${attached} new certificate${attached > 1 ? "s" : ""} attached 📜`, "success");
+        ev = await getParticipation(id);
+      }
+    } catch (e) { console.warn("cert reconcile", e); }
+  }
+
   const opp = ev.opportunityId ? await getOpportunity(ev.opportunityId) : null;
   const today = new Date().toISOString().slice(0, 10);
 
@@ -100,15 +112,13 @@ export async function renderEventDetail(el, params) {
             : '<p class="muted small">No certificates uploaded yet.</p>'}
         </div>
         ${canEdit ? (certUploadsEnabled() ? `
-        <form id="cert-form" style="display:flex; flex-direction:column; gap:8px; margin-top:12px; border-top:1px dashed var(--border); padding-top:12px">
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px; border-top:1px dashed var(--border); padding-top:12px">
           <div style="display:flex; gap:8px; flex-wrap:wrap">
-            <select name="kind" style="width:auto">${CERT_KINDS.map((k) => `<option>${k}</option>`).join("")}</select>
-            <input type="text" name="label" placeholder="Label (e.g. Winner certificate)" style="flex:1; min-width:150px" />
+            <button class="btn btn-primary btn-sm" type="button" id="cert-open">⬆ Upload certificate</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="cert-refresh">🔄 Check for new uploads</button>
           </div>
-          <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.pdf" required />
-          <button class="btn btn-primary btn-sm" type="submit" id="cert-btn">⬆ Upload certificate</button>
-          <span class="hint muted small">JPG, PNG, WEBP or PDF · up to 10 MB · stored in the college Drive</span>
-        </form>` : '<p class="hint muted small" style="margin-top:10px">Certificate uploads are not configured yet — ask the admin team.</p>') : ""}
+          <span class="hint muted small">Opens the college Drive uploader in a new tab (sign in with your SRIT Google account). You can upload as many certificates as you need — after uploading, come back and they'll appear here.</span>
+        </div>` : '<p class="hint muted small" style="margin-top:10px">Certificate uploads are not configured yet — ask the admin team.</p>') : ""}
       </div>
 
       <div class="card">
@@ -127,21 +137,15 @@ export async function renderEventDetail(el, params) {
   </div>`;
 
   /* ---- certificates ---- */
-  el.querySelector("#cert-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const file = form.file.files[0];
-    if (!file) { toast("Choose a file first.", "error"); return; }
-    const btn = el.querySelector("#cert-btn");
-    btn.disabled = true; btn.textContent = "Uploading…";
-    try {
-      await uploadCertificate(ev.id, file, { kind: form.kind.value, label: form.label.value.trim() || file.name });
-      toast("Certificate uploaded 📜", "success");
-      renderEventDetail(el, params);
-    } catch (err) {
-      toast(err.message, "error");
-      btn.disabled = false; btn.textContent = "⬆ Upload certificate";
-    }
+  el.querySelector("#cert-open")?.addEventListener("click", () => {
+    openCertUploader(ev.id, ev.eventName);
+    toast("Uploader opened in a new tab. Come back here after uploading.", "info", 5000);
+  });
+
+  el.querySelector("#cert-refresh")?.addEventListener("click", async () => {
+    const n = await reconcileCertUploads(ev.id);
+    if (n) renderEventDetail(el, params);
+    else toast("No new uploads found yet. Finish the upload in the other tab first.", "info");
   });
 
   el.querySelectorAll("[data-cert-del]").forEach((b) => {

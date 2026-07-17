@@ -82,6 +82,23 @@ service cloud.firestore {
       allow create, update: if signedIn();
     }
 
+    // ---------- certUploads ----------
+    // Staging area for certificates uploaded via the Apps Script Drive
+    // page. The script writes here unauthenticated (REST + API key), so
+    // create is open but strictly shape-validated; only signed-in users
+    // can read/consume entries, and docs are deleted once reconciled.
+    match /certUploads/{id} {
+      allow create: if
+        request.resource.data.keys().hasOnly(
+          ['partId','kind','label','url','fileId','fileName','uploaderEmail','createdAt']) &&
+        request.resource.data.partId is string && request.resource.data.partId.size() < 40 &&
+        request.resource.data.url is string &&
+        request.resource.data.url.matches('https://drive\\.google\\.com/.*') &&
+        request.resource.data.label is string && request.resource.data.label.size() < 200;
+      allow read, delete: if signedIn();
+      allow update: if false;
+    }
+
     // ---------- inviteCodes ----------
     // `get` by document id is open so registration can validate a typed
     // code (unauthenticated); listing codes is faculty-only, so codes

@@ -24,8 +24,8 @@ export const USE_EMULATORS = false;
 // Certificate uploads (Google Drive via Apps Script).
 // Deploy docs/apps-script/certificate-store.gs as a web app and paste its
 // /exec URL + the same shared token here. Leave URL empty to hide uploads.
-export const CERT_UPLOAD_URL = "";
-export const CERT_UPLOAD_TOKEN = "CHANGE-ME-TO-A-RANDOM-SECRET";
+export const CERT_UPLOAD_URL = "https://script.google.com/a/macros/sritcbe.ac.in/s/AKfycbxY7sR85Vs5-Y5BFgp5v2D0FQRUde3eUjIhiVhKMT101-vxcLlvitQXYaUlaA438zMl/exec";
+export const CERT_UPLOAD_TOKEN = "asdfghjkl123456zxcvbnm456789";
 
 // App-wide constants
 export const ALLOWED_DOMAIN = "sritcbe.ac.in";

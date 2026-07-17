@@ -1,63 +1,60 @@
-// Certificate uploads — files go to Google Drive via the Apps Script
-// endpoint (docs/apps-script/certificate-store.gs); metadata lives on the
-// participation doc in Firestore.
-import { db, doc, updateDoc, arrayUnion, arrayRemove, Timestamp } from "./firebase.js";
+// Certificates — Google Drive via a domain-restricted Apps Script page.
+// Because the college Workspace only allows "Anyone within sritcbe.ac.in",
+// HIVE cannot call the script in the background. Instead:
+//   1. openCertUploader() opens the script's own upload page in a new tab
+//      (student is signed in to their SRIT Google account, so it loads);
+//   2. the script saves the file to Drive and writes the metadata to the
+//      Firestore staging collection `certUploads`;
+//   3. reconcileCertUploads() (run whenever a team member opens the event)
+//      moves staged entries onto the participation doc and clears staging.
+import {
+  db, doc, updateDoc, deleteDoc, getDocs, collection, query, where,
+  arrayUnion, arrayRemove, Timestamp,
+} from "./firebase.js";
 import { session } from "./auth.js";
 import { CERT_UPLOAD_URL, CERT_UPLOAD_TOKEN } from "./firebase-config.js";
 
 export const CERT_KINDS = ["participation", "winner", "other"];
-export const MAX_CERT_BYTES = 10 * 1024 * 1024; // keep in sync with the Apps Script
-const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
 export function certUploadsEnabled() { return !!CERT_UPLOAD_URL; }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result.split(",")[1]); // strip data: prefix
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+/** Open the Apps Script upload page for this participation in a new tab. */
+export function openCertUploader(partId, eventName) {
+  const url = `${CERT_UPLOAD_URL}?token=${encodeURIComponent(CERT_UPLOAD_TOKEN)}` +
+    `&partId=${encodeURIComponent(partId)}&event=${encodeURIComponent(eventName || "")}`;
+  window.open(url, "_blank", "noopener");
 }
 
-async function callEndpoint(payload) {
-  // text/plain avoids a CORS preflight, which Apps Script cannot answer
-  const res = await fetch(CERT_UPLOAD_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ token: CERT_UPLOAD_TOKEN, ...payload }),
-  });
-  const out = await res.json();
-  if (!out.ok) throw new Error(out.error || "Upload service error");
-  return out;
+/** Pull staged uploads for this participation onto its `certificates` array.
+ *  Returns the number of certificates attached. Caller must be a team
+ *  member / creator / faculty (Firestore rules enforce it). */
+export async function reconcileCertUploads(partId) {
+  const qs = await getDocs(query(collection(db, "certUploads"), where("partId", "==", partId)));
+  if (qs.empty) return 0;
+  let n = 0;
+  for (const d of qs.docs) {
+    const s = d.data();
+    const cert = {
+      label: s.label || s.fileName || "Certificate",
+      kind: CERT_KINDS.includes(s.kind) ? s.kind : "other",
+      url: s.url,
+      fileId: s.fileId || "",
+      fileName: s.fileName || "",
+      uploadedBy: session.user.uid,
+      uploadedByName: s.uploaderEmail || session.profile?.name || "",
+      uploadedAt: s.createdAt || Timestamp.now(),
+    };
+    try {
+      await updateDoc(doc(db, "participations", partId), { certificates: arrayUnion(cert) });
+      await deleteDoc(doc(db, "certUploads", d.id));
+      n++;
+    } catch (e) { console.warn("cert reconcile failed", e); }
+  }
+  return n;
 }
 
-/** Upload a certificate file and attach its metadata to the participation. */
-export async function uploadCertificate(partId, file, { kind, label }) {
-  if (!certUploadsEnabled()) throw new Error("Certificate uploads are not configured yet.");
-  if (!ALLOWED_MIME.includes(file.type)) throw new Error("Only JPG, PNG, WEBP or PDF files are allowed.");
-  if (file.size > MAX_CERT_BYTES) throw new Error("File is larger than 10 MB.");
-
-  const data = await fileToBase64(file);
-  const out = await callEndpoint({ partId, fileName: file.name, mimeType: file.type, data });
-
-  const cert = {
-    label: label || file.name,
-    kind: kind || "participation",
-    url: out.url,
-    fileId: out.fileId,
-    fileName: file.name,
-    uploadedBy: session.user.uid,
-    uploadedByName: session.profile?.name || "",
-    uploadedAt: Timestamp.now(), // serverTimestamp() is not allowed inside arrayUnion
-  };
-  await updateDoc(doc(db, "participations", partId), { certificates: arrayUnion(cert) });
-  return cert;
-}
-
-/** Remove a certificate: delete the Drive file, then drop the metadata. */
+/** Remove certificate metadata from the participation. The file itself
+ *  stays in the college Drive (faculty can tidy the folder there). */
 export async function deleteCertificate(partId, cert) {
-  try { await callEndpoint({ action: "delete", fileId: cert.fileId }); }
-  catch (e) { console.warn("Drive delete failed (removing metadata anyway)", e); }
   await updateDoc(doc(db, "participations", partId), { certificates: arrayRemove(cert) });
 }
