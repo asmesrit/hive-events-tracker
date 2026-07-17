@@ -71,7 +71,7 @@ export async function renderAdminEvents(el) {
         <thead><tr><th>Event</th><th>Type</th><th>Team</th><th>Dept</th><th>Status</th><th>Added</th><th></th></tr></thead>
         <tbody>${filtered.map((p) => `
           <tr>
-            <td class="clickable" data-open="${p.id}"><strong>${escapeHtml(p.eventName)}</strong>${p.opportunityId ? ' <span title="Linked to a posted event">🔗</span>' : ""}</td>
+            <td class="clickable" data-open="${p.id}"><strong>${escapeHtml(p.eventName)}</strong>${p.opportunityId ? ' <span title="Linked to a posted event">🔗</span>' : ""}${(p.certificates || []).length ? ` <span title="${(p.certificates || []).length} certificate(s)">📜</span>` : ""}</td>
             <td>${typeBadge(p.eventType)}</td>
             <td class="small" style="max-width:220px">${escapeHtml(teamNames(p))}</td>
             <td>${escapeHtml(deptOf(p) || "—")}</td>

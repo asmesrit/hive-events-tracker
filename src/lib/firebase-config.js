@@ -21,6 +21,12 @@ export const firebaseConfig = {
 // (firebase emulators:start). Set false for the real project.
 export const USE_EMULATORS = false;
 
+// Certificate uploads (Google Drive via Apps Script).
+// Deploy docs/apps-script/certificate-store.gs as a web app and paste its
+// /exec URL + the same shared token here. Leave URL empty to hide uploads.
+export const CERT_UPLOAD_URL = "";
+export const CERT_UPLOAD_TOKEN = "CHANGE-ME-TO-A-RANDOM-SECRET";
+
 // App-wide constants
 export const ALLOWED_DOMAIN = "sritcbe.ac.in";
 export const DEFAULT_PASSWORD = "Hive@1234"; // students may keep or change it

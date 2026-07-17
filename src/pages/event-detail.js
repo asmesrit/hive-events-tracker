@@ -1,6 +1,7 @@
 // Event detail — full view of one participation, quick status update, edit/delete.
 import { session, isFaculty } from "../lib/auth.js";
 import { getParticipation, updateParticipation, deleteParticipation, getOpportunity } from "../lib/db.js";
+import { certUploadsEnabled, uploadCertificate, deleteCertificate, CERT_KINDS } from "../lib/certificates.js";
 import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, fmtDateTime, toast, confirmDialog } from "../lib/ui.js";
 
 export async function renderEventDetail(el, params) {
@@ -83,6 +84,34 @@ export async function renderEventDetail(el, params) {
       </div>
 
       <div class="card">
+        <h3>📜 Certificates</h3>
+        <div id="cert-list">
+          ${(ev.certificates || []).length
+            ? ev.certificates.map((c, i) => `
+              <div class="member-row">
+                <div class="who">
+                  <span class="nm">${escapeHtml(c.label)}</span>
+                  <span class="badge ${c.kind === "winner" ? "badge-won" : c.kind === "participation" ? "badge-active" : "badge-neutral"}">${escapeHtml(c.kind)}</span>
+                  <div class="em">by ${escapeHtml(c.uploadedByName || "")} · ${fmtDate(c.uploadedAt)}</div>
+                </div>
+                <a class="btn btn-ghost btn-sm" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">View ↗</a>
+                ${(c.uploadedBy === session.user.uid || isFaculty()) ? `<button class="btn btn-ghost btn-sm" data-cert-del="${i}" style="color:var(--red)">✕</button>` : ""}
+              </div>`).join("")
+            : '<p class="muted small">No certificates uploaded yet.</p>'}
+        </div>
+        ${canEdit ? (certUploadsEnabled() ? `
+        <form id="cert-form" style="display:flex; flex-direction:column; gap:8px; margin-top:12px; border-top:1px dashed var(--border); padding-top:12px">
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <select name="kind" style="width:auto">${CERT_KINDS.map((k) => `<option>${k}</option>`).join("")}</select>
+            <input type="text" name="label" placeholder="Label (e.g. Winner certificate)" style="flex:1; min-width:150px" />
+          </div>
+          <input type="file" name="file" accept=".jpg,.jpeg,.png,.webp,.pdf" required />
+          <button class="btn btn-primary btn-sm" type="submit" id="cert-btn">⬆ Upload certificate</button>
+          <span class="hint muted small">JPG, PNG, WEBP or PDF · up to 10 MB · stored in the college Drive</span>
+        </form>` : '<p class="hint muted small" style="margin-top:10px">Certificate uploads are not configured yet — ask the admin team.</p>') : ""}
+      </div>
+
+      <div class="card">
         <h3>Dates to track</h3>
         ${(ev.datesToTrack || []).length
           ? (ev.datesToTrack).slice().sort((a, b) => a.date.localeCompare(b.date)).map((d) => `
@@ -96,6 +125,37 @@ export async function renderEventDetail(el, params) {
       </div>
     </div>
   </div>`;
+
+  /* ---- certificates ---- */
+  el.querySelector("#cert-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const file = form.file.files[0];
+    if (!file) { toast("Choose a file first.", "error"); return; }
+    const btn = el.querySelector("#cert-btn");
+    btn.disabled = true; btn.textContent = "Uploading…";
+    try {
+      await uploadCertificate(ev.id, file, { kind: form.kind.value, label: form.label.value.trim() || file.name });
+      toast("Certificate uploaded 📜", "success");
+      renderEventDetail(el, params);
+    } catch (err) {
+      toast(err.message, "error");
+      btn.disabled = false; btn.textContent = "⬆ Upload certificate";
+    }
+  });
+
+  el.querySelectorAll("[data-cert-del]").forEach((b) => {
+    b.onclick = async () => {
+      const cert = ev.certificates[Number(b.dataset.certDel)];
+      const ok = await confirmDialog(`Remove certificate "${cert.label}"?`, { danger: true, okText: "Remove" });
+      if (!ok) return;
+      try {
+        await deleteCertificate(ev.id, cert);
+        toast("Certificate removed", "success");
+        renderEventDetail(el, params);
+      } catch (err) { toast(err.message, "error"); }
+    };
+  });
 
   if (canEdit) {
     el.querySelector("#quick-form")?.addEventListener("submit", async (e) => {

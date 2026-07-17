@@ -60,7 +60,7 @@ export async function renderEvents(el) {
           ${filtered.map((ev) => {
             const nd = nextDate(ev);
             return `<tr class="clickable" data-id="${ev.id}">
-              <td><strong>${escapeHtml(ev.eventName)}</strong><div class="muted small">added ${fmtDate(ev.createdAt)}</div></td>
+              <td><strong>${escapeHtml(ev.eventName)}</strong>${(ev.certificates || []).length ? ` <span title="${(ev.certificates || []).length} certificate(s)">📜</span>` : ""}<div class="muted small">added ${fmtDate(ev.createdAt)}</div></td>
               <td>${typeBadge(ev.eventType)}</td>
               <td>${ev.teamSize || 1} member${(ev.teamSize || 1) > 1 ? "s" : ""}</td>
               <td>${statusBadge(ev.overallStatus)}</td>

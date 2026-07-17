@@ -85,6 +85,7 @@ export async function renderAdminReports(el) {
         team: [p.createdByName, ...(p.members || []).map((m) => m.name)].filter(Boolean).join(", "),
         teamSize: p.teamSize || 1,
         status: p.overallStatus || "",
+        certs: (p.certificates || []).length,
         progress: p.currentStatus || "",
         added: fmtDate(p.createdAt),
         _p: p,
@@ -123,8 +124,8 @@ export async function renderAdminReports(el) {
     <p class="muted small" style="margin-top:8px">${rows.length} entr${rows.length === 1 ? "y" : "ies"} in this report</p>`;
   }
 
-  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Status", "Progress", "Added on"];
-  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.status, r.progress, r.added];
+  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Status", "Certificates", "Progress", "Added on"];
+  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.status, r.certs, r.progress, r.added];
 
   el.querySelector("#r-csv").onclick = () => {
     const rows = currentRows();

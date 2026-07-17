@@ -49,7 +49,7 @@ export async function renderAdminStudentDetail(el, params) {
         <thead><tr><th>Event</th><th>Type</th><th>Status</th><th>Added</th></tr></thead>
         <tbody>${parts.map((p) => `
           <tr class="clickable" data-id="${p.id}">
-            <td><strong>${escapeHtml(p.eventName)}</strong></td>
+            <td><strong>${escapeHtml(p.eventName)}</strong>${(p.certificates || []).length ? ` <span title="${(p.certificates || []).length} certificate(s)">📜</span>` : ""}</td>
             <td>${typeBadge(p.eventType)}</td>
             <td>${statusBadge(p.overallStatus)}</td>
             <td class="small">${fmtDate(p.createdAt)}</td>
