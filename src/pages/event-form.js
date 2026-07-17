@@ -33,6 +33,7 @@ export async function renderEventForm(el, params = []) {
     members: existing ? (existing.members || []).filter((m) => m.uid !== existing.createdBy) : [],
     datesToTrack: existing?.datesToTrack || [],
     opportunityId: existing?.opportunityId || prefillOpp?.id || null,
+    mentor: existing?.mentor || null,
   };
 
   const ev = existing || {};
@@ -91,12 +92,24 @@ export async function renderEventForm(el, params = []) {
       <div class="field">
         <div class="radio-group" id="member-kind">
           <label><input type="radio" name="mkind" value="registered" checked /> Registered on HIVE</label>
-          <label><input type="radio" name="mkind" value="srit-pending" /> SRIT student (not registered yet)</label>
+          <label><input type="radio" name="mkind" value="srit-pending" /> SRIT student/faculty (not registered yet)</label>
           <label><input type="radio" name="mkind" value="external" /> Other college</label>
         </div>
       </div>
       <div id="member-input-zone"></div>
       <div id="member-list" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Faculty mentor <span class="muted small">(optional)</span></h3>
+      <div class="field">
+        <div class="radio-group" id="mentor-kind">
+          <label><input type="radio" name="mtkind" value="registered" checked /> Registered on HIVE</label>
+          <label><input type="radio" name="mtkind" value="srit-pending" /> Not registered yet (SRIT official mail)</label>
+        </div>
+      </div>
+      <div id="mentor-input-zone"></div>
+      <div id="mentor-display" style="margin-top:10px"></div>
     </div>
 
     <div class="card">
@@ -198,12 +211,12 @@ export async function renderEventForm(el, params = []) {
           u.id !== session.user.uid && !state.members.some((m) => m.uid === u.id));
         if (!users.length) { box.style.display = "none"; return; }
         box.innerHTML = users.map((u, i) =>
-          `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}</div><div class="sub">${escapeHtml([u.registerNumber, u.department, u.year && "Year " + u.year].filter(Boolean).join(" · "))}</div></div>`).join("");
+          `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}${u.role === "faculty" ? ' <span class="badge badge-broadcast">faculty</span>' : ""}</div><div class="sub">${escapeHtml(u.role === "faculty" ? [u.department, "Faculty"].filter(Boolean).join(" · ") : [u.registerNumber, u.department, u.year && "Year " + u.year].filter(Boolean).join(" · "))}</div></div>`).join("");
         box.style.display = "block";
         box.querySelectorAll(".autocomplete-item").forEach((n) => {
           n.onclick = () => {
             const u = users[Number(n.dataset.i)];
-            state.members.push({ type: "registered", uid: u.id, name: u.name, email: u.authEmail });
+            state.members.push({ type: "registered", uid: u.id, name: u.name, email: u.authEmail, role: u.role || "student" });
             inp.value = ""; box.style.display = "none";
             drawMembers();
           };
@@ -248,7 +261,8 @@ export async function renderEventForm(el, params = []) {
   }
 
   function memberTag(m) {
-    if (m.type === "registered") return '<span class="badge badge-won">HIVE user</span>';
+    const fac = m.role === "faculty" ? ' <span class="badge badge-broadcast">faculty</span>' : "";
+    if (m.type === "registered") return '<span class="badge badge-won">HIVE user</span>' + fac;
     if (m.type === "srit-pending") return '<span class="badge badge-active">SRIT · pending signup</span>';
     return '<span class="badge badge-neutral">Other college</span>';
   }
@@ -272,6 +286,79 @@ export async function renderEventForm(el, params = []) {
 
   drawMemberInput();
   drawMembers();
+
+  /* ---------- faculty mentor ---------- */
+  const mentorZone = el.querySelector("#mentor-input-zone");
+  const mentorDisplay = el.querySelector("#mentor-display");
+  let mentorKind = "registered";
+
+  el.querySelectorAll('#mentor-kind input[name="mtkind"]').forEach((r) => {
+    r.onchange = () => { mentorKind = r.value; drawMentorInput(); };
+  });
+
+  function drawMentorInput() {
+    if (state.mentor) { mentorZone.innerHTML = ""; return; } // one mentor at a time
+    if (mentorKind === "registered") {
+      mentorZone.innerHTML = `
+        <div class="autocomplete-wrap">
+          <input type="text" id="mentor-search" autocomplete="off" placeholder="Search faculty by name…" />
+          <div class="autocomplete-list" id="mentor-suggest" style="display:none"></div>
+        </div>`;
+      const inp = mentorZone.querySelector("#mentor-search");
+      const box = mentorZone.querySelector("#mentor-suggest");
+      const search = debounce(async () => {
+        const v = inp.value.trim();
+        if (v.length < 2) { box.style.display = "none"; return; }
+        const fac = (await searchUsersByName(v)).filter((u) => u.role === "faculty");
+        if (!fac.length) { box.style.display = "none"; return; }
+        box.innerHTML = fac.map((u, i) =>
+          `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}</div><div class="sub">${escapeHtml([u.department, "Faculty"].filter(Boolean).join(" · "))}</div></div>`).join("");
+        box.style.display = "block";
+        box.querySelectorAll(".autocomplete-item").forEach((n) => {
+          n.onclick = () => {
+            const u = fac[Number(n.dataset.i)];
+            state.mentor = { type: "registered", uid: u.id, name: u.name, email: u.authEmail };
+            drawMentorInput(); drawMentor();
+          };
+        });
+      }, 300);
+      inp.addEventListener("input", search);
+    } else {
+      mentorZone.innerHTML = `
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <input type="text" id="mt-name" placeholder="Mentor's name" style="flex:1; min-width:160px" />
+          <input type="email" id="mt-email" placeholder="their.name@${escapeHtml(ALLOWED_DOMAIN)}" style="flex:1.4; min-width:200px" />
+          <button class="btn btn-ghost" type="button" id="mt-add">Set mentor</button>
+        </div>`;
+      mentorZone.querySelector("#mt-add").onclick = () => {
+        const name = mentorZone.querySelector("#mt-name").value.trim();
+        const email = normEmail(mentorZone.querySelector("#mt-email").value);
+        if (!name || !email) { toast("Enter the mentor's name and email.", "error"); return; }
+        if (!isSritEmail(email)) { toast(`Mentor's email must be @${ALLOWED_DOMAIN}.`, "error"); return; }
+        state.mentor = { type: "srit-pending", name, email };
+        drawMentorInput(); drawMentor();
+      };
+    }
+  }
+
+  function drawMentor() {
+    mentorDisplay.innerHTML = state.mentor ? `
+      <div class="member-row">
+        <div class="avatar">${escapeHtml((state.mentor.name || "?")[0].toUpperCase())}</div>
+        <div class="who">
+          <div class="nm">${escapeHtml(state.mentor.name)} <span class="badge badge-broadcast">mentor</span>
+            ${state.mentor.type === "srit-pending" ? '<span class="badge badge-active">pending signup</span>' : ""}</div>
+          <div class="em">${escapeHtml(state.mentor.email || "")}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button" id="mt-rm">Remove</button>
+      </div>` : '<p class="muted small">No mentor set.</p>';
+    mentorDisplay.querySelector("#mt-rm")?.addEventListener("click", () => {
+      state.mentor = null; drawMentorInput(); drawMentor();
+    });
+  }
+
+  drawMentorInput();
+  drawMentor();
 
   /* ---------- dates to track ---------- */
   const datesList = el.querySelector("#dates-list");
@@ -314,6 +401,7 @@ export async function renderEventForm(el, params = []) {
       currentStatus: data.currentStatus,
       overallStatus: data.overallStatus,
       datesToTrack: state.datesToTrack,
+      mentor: state.mentor,
     };
     try {
       if (editId) {

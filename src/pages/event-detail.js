@@ -49,6 +49,7 @@ export async function renderEventDetail(el, params) {
           <dt>Team size</dt><dd>${ev.teamSize || 1}</dd>
           <dt>Overall status</dt><dd>${statusBadge(ev.overallStatus)}</dd>
           <dt>Current progress</dt><dd>${escapeHtml(ev.currentStatus || "—")}</dd>
+          <dt>Faculty mentor</dt><dd>${ev.mentor ? `${escapeHtml(ev.mentor.name)}${ev.mentor.type === "srit-pending" ? ' <span class="badge badge-active">pending signup</span>' : ""}<div class="muted small">${escapeHtml(ev.mentor.email || "")}</div>` : '<span class="muted">—</span>'}</dd>
           <dt>Added by</dt><dd>${escapeHtml(ev.createdByName || "—")}</dd>
           <dt>Added on</dt><dd>${fmtDateTime(ev.createdAt)}</dd>
           <dt>Last updated</dt><dd>${fmtDateTime(ev.updatedAt)}</dd>
@@ -89,7 +90,7 @@ export async function renderEventDetail(el, params) {
                 <div class="nm">${escapeHtml(m.name)} ${
                   m.type === "registered" ? '<span class="badge badge-won">HIVE user</span>'
                   : m.type === "srit-pending" ? '<span class="badge badge-active">pending signup</span>'
-                  : '<span class="badge badge-neutral">other college</span>'}</div>
+                  : '<span class="badge badge-neutral">other college</span>'}${m.role === "faculty" ? ' <span class="badge badge-broadcast">faculty</span>' : ""}</div>
                 <div class="em">${escapeHtml(m.email || "")}</div>
               </div>
             </div>`).join("")}

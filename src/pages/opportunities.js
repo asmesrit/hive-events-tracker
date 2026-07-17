@@ -26,17 +26,27 @@ export async function renderOpportunities(el) {
       <option value="broadcast">📢 Faculty broadcasts</option>
       <option value="student">Student posts</option>
     </select>
+    <select id="f-life">
+      <option value="live">Live only</option>
+      <option value="expired">⏳ Expired only</option>
+      <option value="">Everything</option>
+    </select>
   </div>
   <div id="opp-list" class="grid" style="grid-template-columns:1fr"></div>`;
 
   const listEl = el.querySelector("#opp-list");
 
+  const today = new Date().toISOString().slice(0, 10);
+  const isExpired = (o) => !!o.expiresOn && o.expiresOn < today;
+
   function draw() {
     const text = el.querySelector("#f-text").value.toLowerCase();
     const who = el.querySelector("#f-who").value;
+    const life = el.querySelector("#f-life").value;
     const filtered = opps.filter((o) =>
       (!text || o.name.toLowerCase().includes(text)) &&
-      (!who || (who === "broadcast" ? o.isBroadcast : !o.isBroadcast)));
+      (!who || (who === "broadcast" ? o.isBroadcast : !o.isBroadcast)) &&
+      (!life || (life === "expired" ? isExpired(o) : !isExpired(o))));
 
     if (!filtered.length) {
       listEl.innerHTML = emptyState("🔔", "No opportunities posted yet", "Be the first to share an event you came across!");
@@ -44,16 +54,17 @@ export async function renderOpportunities(el) {
     }
 
     listEl.innerHTML = filtered.map((o) => `
-      <div class="card notif-card">
+      <div class="card notif-card ${isExpired(o) ? "notif-expired" : ""}">
         <div class="notif-icon">${o.isBroadcast ? "📢" : "💡"}</div>
         <div class="notif-body">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
             <strong>${escapeHtml(o.name)}</strong>
             ${o.isBroadcast ? '<span class="badge badge-broadcast">Faculty broadcast</span>' : ""}
             <span class="badge badge-type">${escapeHtml(o.type || "Event")}</span>
+            ${isExpired(o) ? '<span class="badge badge-neutral">⏳ Expired</span>' : ""}
           </div>
           ${o.notes ? `<p class="muted small" style="margin-top:4px">${escapeHtml(o.notes)}</p>` : ""}
-          <div class="notif-meta">Posted by ${escapeHtml(o.postedByName || "someone")} · ${fmtDateTime(o.createdAt)}</div>
+          <div class="notif-meta">Posted by ${escapeHtml(o.postedByName || "someone")} · ${fmtDateTime(o.createdAt)}${o.expiresOn ? ` · ${isExpired(o) ? "expired" : "valid till"} ${escapeHtml(o.expiresOn)}` : ""}</div>
           <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap">
             ${o.registrationLink ? `<a class="btn btn-ghost btn-sm" href="${escapeHtml(o.registrationLink)}" target="_blank" rel="noopener">Register ↗</a>` : ""}
             <button class="btn btn-primary btn-sm" data-track="${o.id}">🎯 Track this event</button>
@@ -106,6 +117,10 @@ export async function renderOpportunities(el) {
           <label>Notes</label>
           <textarea name="notes" placeholder="Eligibility, deadlines, anything useful…">${escapeHtml(existing?.notes || "")}</textarea>
         </div>
+        <div class="field">
+          <label>Valid till <span class="muted small">(registration deadline or event date — post shows as Expired after this)</span></label>
+          <input type="date" name="expiresOn" value="${escapeHtml(existing?.expiresOn || "")}" />
+        </div>
         ${faculty ? `<label class="checkbox-row"><input type="checkbox" name="isBroadcast" ${existing?.isBroadcast || !existing ? "checked" : ""}/> 📢 Broadcast to all students</label>` : ""}
         <div class="modal-actions">
           <button class="btn btn-ghost" type="button" id="opp-cancel">Cancel</button>
@@ -121,6 +136,7 @@ export async function renderOpportunities(el) {
         type: data.type,
         registrationLink: data.registrationLink?.trim() || "",
         notes: data.notes?.trim() || "",
+        expiresOn: data.expiresOn || null,
         isBroadcast: faculty ? data.isBroadcast === "on" : false,
       };
       try {

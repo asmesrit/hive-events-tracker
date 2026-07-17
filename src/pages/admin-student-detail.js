@@ -58,6 +58,25 @@ export async function renderAdminStudentDetail(el, params) {
     </div>
   </div>`;
 
+  // consolidated certificates across all this student's participations
+  const allCerts = parts.flatMap((p) =>
+    (p.certificates || []).map((c) => ({ ...c, eventName: p.eventName, partId: p.id })));
+  const certsCard = document.createElement("div");
+  certsCard.className = "card";
+  certsCard.style.marginTop = "16px";
+  certsCard.innerHTML = `
+    <h3>📜 Certificates (${allCerts.length})</h3>
+    ${allCerts.length ? allCerts.map((c) => `
+      <div class="member-row">
+        <div class="who">
+          <span class="nm">${escapeHtml(c.label)}</span>
+          <span class="badge ${c.kind === "winner" ? "badge-won" : c.kind === "participation" ? "badge-active" : "badge-neutral"}">${escapeHtml(c.kind)}</span>
+          <div class="em">${escapeHtml(c.eventName)} · ${fmtDate(c.uploadedAt)}</div>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">View ↗</a>
+      </div>`).join("") : '<p class="muted small">No certificates uploaded.</p>'}`;
+  el.appendChild(certsCard);
+
   el.querySelectorAll("tr.clickable").forEach((tr) => {
     tr.onclick = () => { location.hash = `#/events/${tr.dataset.id}`; };
   });

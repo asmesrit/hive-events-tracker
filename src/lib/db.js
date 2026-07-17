@@ -43,6 +43,7 @@ export async function createParticipation(data) {
     currentStatus: data.currentStatus || "",
     overallStatus: data.overallStatus || "active",
     datesToTrack: data.datesToTrack || [],
+    mentor: data.mentor || null, // { type:'registered'|'srit-pending', uid?, name, email? }
     notes: data.notes || "",
     createdBy: uid,
     createdByName: session.profile?.name || "",
@@ -138,6 +139,7 @@ export async function createOpportunity(data) {
     registrationLink: data.registrationLink || "",
     notes: data.notes || "",
     dates: data.dates || {},
+    expiresOn: data.expiresOn || null, // yyyy-mm-dd; past = shown as expired, never auto-deleted
     isBroadcast: !!data.isBroadcast,
     postedBy: session.user.uid,
     postedByName: session.profile?.name || "",

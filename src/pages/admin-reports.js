@@ -85,7 +85,9 @@ export async function renderAdminReports(el) {
         team: [p.createdByName, ...(p.members || []).map((m) => m.name)].filter(Boolean).join(", "),
         teamSize: p.teamSize || 1,
         status: p.overallStatus || "",
+        mentor: p.mentor?.name || "",
         certs: (p.certificates || []).length,
+        certLinks: (p.certificates || []).map((c) => `${c.label} (${c.kind}): ${c.url}`).join("  |  "),
         progress: p.currentStatus || "",
         added: fmtDate(p.createdAt),
         _p: p,
@@ -107,7 +109,7 @@ export async function renderAdminReports(el) {
     previewEl.innerHTML = `
     <div class="card table-wrap" style="padding:0">
       <table class="data">
-        <thead><tr><th>Event</th><th>Type</th><th>Student</th><th>Reg. No</th><th>Dept</th><th>Team size</th><th>Status</th><th>Added</th></tr></thead>
+        <thead><tr><th>Event</th><th>Type</th><th>Student</th><th>Reg. No</th><th>Dept</th><th>Mentor</th><th>Status</th><th>📜</th><th>Added</th></tr></thead>
         <tbody>${rows.length ? rows.map((r) => `
           <tr>
             <td><strong>${escapeHtml(r.event)}</strong></td>
@@ -115,17 +117,18 @@ export async function renderAdminReports(el) {
             <td>${escapeHtml(r.student)}</td>
             <td>${escapeHtml(r.regNo)}</td>
             <td>${escapeHtml(r.dept)}</td>
-            <td>${r.teamSize}</td>
+            <td>${escapeHtml(r.mentor || "—")}</td>
             <td>${statusBadge(r.status)}</td>
+            <td>${r.certs || ""}</td>
             <td class="small">${escapeHtml(r.added)}</td>
-          </tr>`).join("") : '<tr><td colspan="8" class="muted" style="text-align:center;padding:30px">No entries match this report</td></tr>'}</tbody>
+          </tr>`).join("") : '<tr><td colspan="9" class="muted" style="text-align:center;padding:30px">No entries match this report</td></tr>'}</tbody>
       </table>
     </div>
     <p class="muted small" style="margin-top:8px">${rows.length} entr${rows.length === 1 ? "y" : "ies"} in this report</p>`;
   }
 
-  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Status", "Certificates", "Progress", "Added on"];
-  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.status, r.certs, r.progress, r.added];
+  const COLS = ["Event", "Type", "Student", "Reg. No", "Department", "Year", "Team members", "Team size", "Faculty mentor", "Status", "Certificates", "Certificate links", "Progress", "Added on"];
+  const rowToArr = (r) => [r.event, r.type, r.student, r.regNo, r.dept, r.year, r.team, r.teamSize, r.mentor, r.status, r.certs, r.certLinks, r.progress, r.added];
 
   el.querySelector("#r-csv").onclick = () => {
     const rows = currentRows();
@@ -155,9 +158,10 @@ export async function renderAdminReports(el) {
       startY: 28,
       head: [COLS],
       body: rows.map(rowToArr),
-      styles: { fontSize: 8, cellPadding: 2 },
+      styles: { fontSize: 7, cellPadding: 1.5, overflow: "linebreak" },
       headStyles: { fillColor: [245, 163, 0], textColor: [28, 21, 0] },
       alternateRowStyles: { fillColor: [250, 249, 245] },
+      columnStyles: { 11: { cellWidth: 55 } }, // certificate links wrap
     });
     docPdf.save(`HIVE-report-${new Date().toISOString().slice(0, 10)}.pdf`);
     toast("PDF downloaded", "success");
