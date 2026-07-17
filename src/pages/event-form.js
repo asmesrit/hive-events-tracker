@@ -33,7 +33,7 @@ export async function renderEventForm(el, params = []) {
     members: existing ? (existing.members || []).filter((m) => m.uid !== existing.createdBy) : [],
     datesToTrack: existing?.datesToTrack || [],
     opportunityId: existing?.opportunityId || prefillOpp?.id || null,
-    mentor: existing?.mentor || null,
+    mentors: existing ? (existing.mentors || (existing.mentor ? [existing.mentor] : [])) : [],
   };
 
   const ev = existing || {};
@@ -122,7 +122,7 @@ export async function renderEventForm(el, params = []) {
     </div>
 
     <div class="card">
-      <h3>Faculty mentor <span class="muted small">(optional)</span></h3>
+      <h3>Faculty mentors <span class="muted small">(optional — add one or more)</span></h3>
       <div class="field">
         <div class="radio-group" id="mentor-kind">
           <label><input type="radio" name="mtkind" value="registered" checked /> Registered on HIVE</label>
@@ -331,7 +331,6 @@ export async function renderEventForm(el, params = []) {
   });
 
   function drawMentorInput() {
-    if (state.mentor) { mentorZone.innerHTML = ""; return; } // one mentor at a time
     if (mentorKind === "registered") {
       mentorZone.innerHTML = `
         <div class="autocomplete-wrap">
@@ -343,7 +342,8 @@ export async function renderEventForm(el, params = []) {
       const search = debounce(async () => {
         const v = inp.value.trim();
         if (v.length < 2) { box.style.display = "none"; return; }
-        const fac = (await searchUsersByName(v)).filter((u) => u.role === "faculty");
+        const fac = (await searchUsersByName(v)).filter((u) =>
+          u.role === "faculty" && !state.mentors.some((m) => m.uid === u.id));
         if (!fac.length) { box.style.display = "none"; return; }
         box.innerHTML = fac.map((u, i) =>
           `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}</div><div class="sub">${escapeHtml([u.department, "Faculty"].filter(Boolean).join(" · "))}</div></div>`).join("");
@@ -351,8 +351,9 @@ export async function renderEventForm(el, params = []) {
         box.querySelectorAll(".autocomplete-item").forEach((n) => {
           n.onclick = () => {
             const u = fac[Number(n.dataset.i)];
-            state.mentor = { type: "registered", uid: u.id, name: u.name, email: u.authEmail };
-            drawMentorInput(); drawMentor();
+            state.mentors.push({ type: "registered", uid: u.id, name: u.name, email: u.authEmail });
+            inp.value = ""; box.style.display = "none";
+            drawMentor();
           };
         });
       }, 300);
@@ -362,32 +363,34 @@ export async function renderEventForm(el, params = []) {
         <div style="display:flex; gap:8px; flex-wrap:wrap">
           <input type="text" id="mt-name" placeholder="Mentor's name" style="flex:1; min-width:160px" />
           <input type="email" id="mt-email" placeholder="their.name@${escapeHtml(ALLOWED_DOMAIN)}" style="flex:1.4; min-width:200px" />
-          <button class="btn btn-ghost" type="button" id="mt-add">Set mentor</button>
+          <button class="btn btn-ghost" type="button" id="mt-add">＋ Add mentor</button>
         </div>`;
       mentorZone.querySelector("#mt-add").onclick = () => {
         const name = mentorZone.querySelector("#mt-name").value.trim();
         const email = normEmail(mentorZone.querySelector("#mt-email").value);
         if (!name || !email) { toast("Enter the mentor's name and email.", "error"); return; }
         if (!isSritEmail(email)) { toast(`Mentor's email must be @${ALLOWED_DOMAIN}.`, "error"); return; }
-        state.mentor = { type: "srit-pending", name, email };
-        drawMentorInput(); drawMentor();
+        if (state.mentors.some((m) => normEmail(m.email) === email)) { toast("Already added.", "error"); return; }
+        state.mentors.push({ type: "srit-pending", name, email });
+        mentorZone.querySelector("#mt-name").value = ""; mentorZone.querySelector("#mt-email").value = "";
+        drawMentor();
       };
     }
   }
 
   function drawMentor() {
-    mentorDisplay.innerHTML = state.mentor ? `
+    mentorDisplay.innerHTML = state.mentors.length ? state.mentors.map((m, i) => `
       <div class="member-row">
-        <div class="avatar">${escapeHtml((state.mentor.name || "?")[0].toUpperCase())}</div>
+        <div class="avatar">${escapeHtml((m.name || "?")[0].toUpperCase())}</div>
         <div class="who">
-          <div class="nm">${escapeHtml(state.mentor.name)} <span class="badge badge-broadcast">mentor</span>
-            ${state.mentor.type === "srit-pending" ? '<span class="badge badge-active">pending signup</span>' : ""}</div>
-          <div class="em">${escapeHtml(state.mentor.email || "")}</div>
+          <div class="nm">${escapeHtml(m.name)} <span class="badge badge-broadcast">mentor</span>
+            ${m.type === "srit-pending" ? '<span class="badge badge-active">pending signup</span>' : ""}</div>
+          <div class="em">${escapeHtml(m.email || "")}</div>
         </div>
-        <button class="btn btn-ghost btn-sm" type="button" id="mt-rm">Remove</button>
-      </div>` : '<p class="muted small">No mentor set.</p>';
-    mentorDisplay.querySelector("#mt-rm")?.addEventListener("click", () => {
-      state.mentor = null; drawMentorInput(); drawMentor();
+        <button class="btn btn-ghost btn-sm" type="button" data-mt-rm="${i}">Remove</button>
+      </div>`).join("") : '<p class="muted small">No mentors set.</p>';
+    mentorDisplay.querySelectorAll("[data-mt-rm]").forEach((b) => {
+      b.onclick = () => { state.mentors.splice(Number(b.dataset.mtRm), 1); drawMentor(); };
     });
   }
 
@@ -435,7 +438,7 @@ export async function renderEventForm(el, params = []) {
       currentStatus: data.currentStatus,
       overallStatus: data.overallStatus,
       datesToTrack: state.datesToTrack,
-      mentor: state.mentor,
+      mentors: state.mentors,
       prizeMoney: data.hasPrize === "yes" && Number(data.prizeAmount) > 0
         ? {
             amount: Number(data.prizeAmount),

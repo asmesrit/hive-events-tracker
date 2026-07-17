@@ -43,7 +43,9 @@ export async function createParticipation(data) {
     currentStatus: data.currentStatus || "",
     overallStatus: data.overallStatus || "active",
     datesToTrack: data.datesToTrack || [],
-    mentor: data.mentor || null, // { type:'registered'|'srit-pending', uid?, name, email? }
+    mentors: data.mentors || [], // [{ type:'registered'|'srit-pending', uid?, name, email? }]
+    mentorUids: (data.mentors || []).filter((m) => m.type === "registered" && m.uid).map((m) => m.uid),
+    mentorPendingEmails: (data.mentors || []).filter((m) => m.type === "srit-pending" && m.email).map((m) => normEmail(m.email)),
     prizeMoney: data.prizeMoney || null, // { amount, currency }
     photos: [], // filled via the Drive uploader (see lib/certificates.js)
     notes: data.notes || "",
@@ -53,8 +55,14 @@ export async function createParticipation(data) {
     updatedAt: serverTimestamp(),
   };
   const ref = await addDoc(collection(db, "participations"), docData);
-  await registerPendingClaims(ref.id, pendingSritEmails);
+  await registerPendingClaims(ref.id, [...pendingSritEmails, ...docData.mentorPendingEmails]);
   return ref.id;
+}
+
+/** Mentors of a participation (handles legacy single-`mentor` docs). */
+export function getMentors(p) {
+  if (Array.isArray(p.mentors)) return p.mentors;
+  return p.mentor ? [p.mentor] : [];
 }
 
 export async function updateParticipation(partId, data) {
@@ -69,7 +77,25 @@ export async function updateParticipation(partId, data) {
       .map((m) => normEmail(m.email));
     await registerPendingClaims(partId, patch.pendingSritEmails);
   }
+  if (data.mentors) {
+    patch.mentorUids = data.mentors.filter((m) => m.type === "registered" && m.uid).map((m) => m.uid);
+    patch.mentorPendingEmails = data.mentors
+      .filter((m) => m.type === "srit-pending" && m.email)
+      .map((m) => normEmail(m.email));
+    patch.mentor = null; // clear legacy single-mentor field
+    await registerPendingClaims(partId, patch.mentorPendingEmails);
+  }
   await updateDoc(doc(db, "participations", partId), patch);
+}
+
+/** Participations mentored by a faculty uid. */
+export async function participationsByMentor(uid) {
+  const qs = await getDocs(query(
+    collection(db, "participations"),
+    where("mentorUids", "array-contains", uid),
+    orderBy("createdAt", "desc"),
+  ));
+  return snapsToArr(qs);
 }
 
 export async function deleteParticipation(partId) {

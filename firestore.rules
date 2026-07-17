@@ -56,6 +56,9 @@ service cloud.firestore {
         resource.data.createdBy == request.auth.uid ||
         (request.auth.token.email != null &&
          request.auth.token.email in resource.data.pendingSritEmails) ||
+        (request.auth.token.email != null &&
+         'mentorPendingEmails' in resource.data &&
+         request.auth.token.email in resource.data.mentorPendingEmails) ||
         isFaculty()
       );
       allow delete: if signedIn() &&

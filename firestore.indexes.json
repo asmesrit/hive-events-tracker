@@ -9,6 +9,14 @@
       ]
     },
     {
+      "collectionGroup": "participations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mentorUids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [

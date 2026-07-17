@@ -1,6 +1,6 @@
 // Admin — report builder: filter participations by period/status/type/dept,
 // then export CSV or PDF. Also manages faculty invite codes.
-import { allParticipations, allUsers, EVENT_TYPES, DEPARTMENTS, createInviteCode, listInviteCodes } from "../lib/db.js";
+import { allParticipations, allUsers, EVENT_TYPES, DEPARTMENTS, createInviteCode, listInviteCodes, getMentors } from "../lib/db.js";
 import { spinner, escapeHtml, toJsDate, fmtDate, toast, statusBadge, typeBadge } from "../lib/ui.js";
 import { APP_NAME } from "../lib/firebase-config.js";
 
@@ -85,7 +85,7 @@ export async function renderAdminReports(el) {
         team: [p.createdByName, ...(p.members || []).map((m) => m.name)].filter(Boolean).join(", "),
         teamSize: p.teamSize || 1,
         status: p.overallStatus || "",
-        mentor: p.mentor?.name || "",
+        mentor: getMentors(p).map((m) => m.name).join(", "),
         prize: p.prizeMoney?.amount ? `${p.prizeMoney.amount} ${p.prizeMoney.currency || "INR"}` : "",
         photos: (p.photos || []).length,
         certs: (p.certificates || []).length,

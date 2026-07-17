@@ -148,16 +148,28 @@ export async function claimPendingParticipations(user) {
         const pSnap = await tx.get(pRef);
         if (!pSnap.exists()) return;
         const p = pSnap.data();
-        const members = (p.members || []).map((m) =>
-          m.type === "srit-pending" && normEmail(m.email) === emailLower
-            ? { ...m, type: "registered", uid: user.uid }
-            : m
-        );
-        tx.update(pRef, {
-          members,
-          memberUids: arrayUnion(user.uid),
-          pendingSritEmails: arrayRemove(emailLower),
-        });
+        const isMember = (p.pendingSritEmails || []).includes(emailLower);
+        const isMentor = (p.mentorPendingEmails || []).includes(emailLower);
+        const patch = {};
+        if (isMember) {
+          patch.members = (p.members || []).map((m) =>
+            m.type === "srit-pending" && normEmail(m.email) === emailLower
+              ? { ...m, type: "registered", uid: user.uid }
+              : m
+          );
+          patch.memberUids = arrayUnion(user.uid);
+          patch.pendingSritEmails = arrayRemove(emailLower);
+        }
+        if (isMentor) {
+          patch.mentors = (p.mentors || []).map((m) =>
+            m.type === "srit-pending" && normEmail(m.email) === emailLower
+              ? { ...m, type: "registered", uid: user.uid }
+              : m
+          );
+          patch.mentorUids = arrayUnion(user.uid);
+          patch.mentorPendingEmails = arrayRemove(emailLower);
+        }
+        if (Object.keys(patch).length) tx.update(pRef, patch);
       });
       claimed++;
     } catch (e) { console.warn("claim tx failed for", partId, e); }

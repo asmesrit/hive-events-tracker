@@ -1,6 +1,6 @@
 // Event detail — full view of one participation, quick status update, edit/delete.
 import { session, isFaculty } from "../lib/auth.js";
-import { getParticipation, updateParticipation, deleteParticipation, getOpportunity } from "../lib/db.js";
+import { getParticipation, updateParticipation, deleteParticipation, getOpportunity, getMentors } from "../lib/db.js";
 import { certUploadsEnabled, openCertUploader, reconcileCertUploads, deleteCertificate, deletePhoto, driveThumb } from "../lib/certificates.js";
 import { spinner, escapeHtml, statusBadge, typeBadge, fmtDate, fmtDateTime, toast, confirmDialog } from "../lib/ui.js";
 
@@ -49,7 +49,9 @@ export async function renderEventDetail(el, params) {
           <dt>Team size</dt><dd>${ev.teamSize || 1}</dd>
           <dt>Overall status</dt><dd>${statusBadge(ev.overallStatus)}</dd>
           <dt>Current progress</dt><dd>${escapeHtml(ev.currentStatus || "—")}</dd>
-          <dt>Faculty mentor</dt><dd>${ev.mentor ? `${escapeHtml(ev.mentor.name)}${ev.mentor.type === "srit-pending" ? ' <span class="badge badge-active">pending signup</span>' : ""}<div class="muted small">${escapeHtml(ev.mentor.email || "")}</div>` : '<span class="muted">—</span>'}</dd>
+          <dt>Faculty mentor${getMentors(ev).length > 1 ? "s" : ""}</dt><dd>${getMentors(ev).length
+            ? getMentors(ev).map((m) => `${escapeHtml(m.name)}${m.type === "srit-pending" ? ' <span class="badge badge-active">pending signup</span>' : ""}<div class="muted small">${escapeHtml(m.email || "")}</div>`).join('<div style="height:6px"></div>')
+            : '<span class="muted">—</span>'}</dd>
           ${ev.prizeMoney?.amount ? `<dt>💰 Prize money</dt><dd><strong>${escapeHtml(String(ev.prizeMoney.amount))} ${escapeHtml(ev.prizeMoney.currency || "INR")}</strong></dd>` : ""}
           <dt>Added by</dt><dd>${escapeHtml(ev.createdByName || "—")}</dd>
           <dt>Added on</dt><dd>${fmtDateTime(ev.createdAt)}</dd>

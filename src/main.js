@@ -16,6 +16,7 @@ import { renderAdminStudents } from "./pages/admin-students.js";
 import { renderAdminStudentDetail } from "./pages/admin-student-detail.js";
 import { renderAdminEvents } from "./pages/admin-events.js";
 import { renderAdminReports } from "./pages/admin-reports.js";
+import { renderAdminMentoring } from "./pages/admin-mentoring.js";
 
 const appEl = document.getElementById("app");
 
@@ -35,6 +36,7 @@ const routes = [
   { path: /^#\/admin\/students\/([\w-]+)$/, render: (el, m) => renderAdminStudentDetail(el, m), auth: "faculty" },
   { path: /^#\/admin\/events$/, render: renderAdminEvents, auth: "faculty" },
   { path: /^#\/admin\/reports$/, render: renderAdminReports, auth: "faculty" },
+  { path: /^#\/admin\/mentoring$/, render: renderAdminMentoring, auth: "faculty" },
 ];
 
 export function navigate(hash) { location.hash = hash; }
@@ -98,6 +100,7 @@ function renderShell() {
           ${navItem("#/admin/dashboard", "📈", "Analytics")}
           ${navItem("#/admin/students", "🎓", "Students")}
           ${navItem("#/admin/events", "🗂️", "All Events")}
+          ${navItem("#/admin/mentoring", "🧑‍🏫", "My Mentoring")}
           ${navItem("#/admin/reports", "📄", "Reports")}
         ` : ""}
       </nav>
