@@ -333,12 +333,30 @@ export async function renderEventForm(el, params = []) {
   function drawMentorInput() {
     if (mentorKind === "registered") {
       mentorZone.innerHTML = `
-        <div class="autocomplete-wrap">
-          <input type="text" id="mentor-search" autocomplete="off" placeholder="Search faculty by name…" />
-          <div class="autocomplete-list" id="mentor-suggest" style="display:none"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <div class="autocomplete-wrap" style="flex:1; min-width:200px">
+            <input type="text" id="mentor-search" autocomplete="off" placeholder="Search faculty by name or email…" />
+            <div class="autocomplete-list" id="mentor-suggest" style="display:none"></div>
+          </div>
+          <button class="btn btn-ghost" type="button" id="mentor-add">＋ Add mentor</button>
         </div>`;
       const inp = mentorZone.querySelector("#mentor-search");
       const box = mentorZone.querySelector("#mentor-suggest");
+      let picked = null; // faculty selected from the dropdown, awaiting Add
+      let lastResults = [];
+
+      function addMentorUser(u) {
+        if (!u) { toast("Type a faculty name and pick them from the list.", "error"); return; }
+        if (state.mentors.some((m) => m.uid === u.id)) { toast("Already added.", "error"); return; }
+        state.mentors.push({ type: "registered", uid: u.id, name: u.name, email: u.authEmail });
+        picked = null; inp.value = ""; box.style.display = "none";
+        drawMentor();
+      }
+
+      mentorZone.querySelector("#mentor-add").onclick = () => {
+        // use the picked suggestion, or an unambiguous single search result
+        addMentorUser(picked || (lastResults.length === 1 ? lastResults[0] : null));
+      };
       const search = debounce(async () => {
         const v = inp.value.trim();
         if (v.length < 2) { box.style.display = "none"; return; }
@@ -358,6 +376,7 @@ export async function renderEventForm(el, params = []) {
           return;
         }
         fac = fac.filter((u) => !state.mentors.some((m) => m.uid === u.id));
+        lastResults = fac;
         if (!fac.length) {
           box.innerHTML = `<div class="autocomplete-item" style="cursor:default"><div class="sub">No registered faculty matches "${escapeHtml(v)}" — if they haven't joined HIVE yet, use the "Not registered yet" option above.</div></div>`;
           box.style.display = "block";
@@ -367,15 +386,10 @@ export async function renderEventForm(el, params = []) {
           `<div class="autocomplete-item" data-i="${i}"><div>${escapeHtml(u.name)}</div><div class="sub">${escapeHtml([u.department, "Faculty"].filter(Boolean).join(" · "))}</div></div>`).join("");
         box.style.display = "block";
         box.querySelectorAll(".autocomplete-item").forEach((n) => {
-          n.onclick = () => {
-            const u = fac[Number(n.dataset.i)];
-            state.mentors.push({ type: "registered", uid: u.id, name: u.name, email: u.authEmail });
-            inp.value = ""; box.style.display = "none";
-            drawMentor();
-          };
+          n.onclick = () => addMentorUser(fac[Number(n.dataset.i)]);
         });
       }, 300);
-      inp.addEventListener("input", search);
+      inp.addEventListener("input", () => { picked = null; search(); });
     } else {
       mentorZone.innerHTML = `
         <div style="display:flex; gap:8px; flex-wrap:wrap">
